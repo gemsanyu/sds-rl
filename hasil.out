@@ -1,0 +1,227 @@
+[master_host:Scheduler REQ-REP:(15463) 1054960.000020] [network/INFO] Sending '{"now":1054960.000020,"events":[{"timestamp":1054960.000020,"type":"JOB_SUBMITTED","data":{"job_id":"w0!1992","job":{"id":"w0!1992","res":1,"subtime":1054960,"walltime":1016,"profile":"100","user_id":0},"profile":{"cpu":100000000,"com":0,"type":"parallel_homogeneous"}}}]}'
+[master_host:Scheduler REQ-REP:(15463) 1054960.000020] [network/INFO] Received '{"now": 1054960.0, "events": [{"timestamp": 1054960.0, "type": "EXECUTE_JOB", "data": {"job_id": "w0!1992", "alloc": "0"}}]}'
+[master_host:waiter 1054969.090000:(15462) 1054969.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15465) 1054969.090015] [network/INFO] Sending '{"now":1054969.090015,"events":[{"timestamp":1054969.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15465) 1054969.090015] [network/INFO] Received '{"now": 1054969.0, "events": []}'
+[master_host:server:(2) 1055047.000030] [server/INFO] Job w0!1993 SUBMITTED. 1993 jobs submitted so far
+[master_host:Scheduler REQ-REP:(15466) 1055047.000030] [network/INFO] Sending '{"now":1055047.000030,"events":[{"timestamp":1055047.000030,"type":"JOB_SUBMITTED","data":{"job_id":"w0!1993","job":{"id":"w0!1993","res":1,"subtime":1055047,"walltime":13,"profile":"100","user_id":0},"profile":{"cpu":100000000,"com":0,"type":"parallel_homogeneous"}}}]}'
+[master_host:Scheduler REQ-REP:(15466) 1055047.000030] [network/INFO] Received '{"now": 1055047.0, "events": [{"timestamp": 1055047.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "1", "state": "1"}}]}'
+[1:switch OFF 1:(15467) 1055047.000045] [pstate/INFO] Switching machine 1 ('1') ON. Passing in virtual pstate 2 to do so
+[1:switch OFF 1:(15467) 1055047.000045] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch ON
+[1:switch OFF 1:(15467) 1055047.999945] [pstate/INFO] 1 flop has been computed. Switching machine 1 ('1') to computing pstate 1
+[master_host:Scheduler REQ-REP:(15468) 1055047.999945] [network/INFO] Sending '{"now":1055047.999945,"events":[{"timestamp":1055047.999945,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"1","state":"1"}}]}'
+[master_host:Scheduler REQ-REP:(15468) 1055047.999945] [network/INFO] Received '{"now": 1055047.0, "events": [{"timestamp": 1055047.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055057.09}}, {"timestamp": 1055047.0, "type": "EXECUTE_JOB", "data": {"job_id": "w0!1993", "alloc": "1"}}]}'
+[master_host:waiter 1055057.090000:(15469) 1055047.999960] [jobs_execution/INFO] Sleeping 9.09004 seconds to reach time 1.05506e+06
+[master_host:waiter 1055057.090000:(15469) 1055057.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15471) 1055057.090015] [network/INFO] Sending '{"now":1055057.090015,"events":[{"timestamp":1055057.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15471) 1055057.090015] [network/INFO] Received '{"now": 1055057.0, "events": []}'
+[0:job_w0!1992:(15464) 1055059.999035] [jobs_execution/INFO] Job w0!1992 finished in time (success)
+[master_host:server:(2) 1055059.999035] [server/INFO] Job w0!1992 has COMPLETED. 1992 jobs completed so far
+[master_host:Scheduler REQ-REP:(15472) 1055059.999035] [network/INFO] Sending '{"now":1055059.999035,"events":[{"timestamp":1055059.999035,"type":"JOB_COMPLETED","data":{"job_id":"w0!1992","job_state":"COMPLETED_SUCCESSFULLY","return_code":0,"alloc":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15472) 1055059.999035] [network/INFO] Received '{"now": 1055059.0, "events": [{"timestamp": 1055059.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055069.09}}]}'
+[master_host:waiter 1055069.090000:(15473) 1055059.999050] [jobs_execution/INFO] Sleeping 9.09095 seconds to reach time 1.05507e+06
+[1:job_w0!1993:(15470) 1055060.999975] [jobs_execution/INFO] Job w0!1993 had been killed (walltime 13 reached)
+[master_host:server:(2) 1055060.999975] [server/INFO] Job w0!1993 has COMPLETED. 1993 jobs completed so far
+[master_host:Scheduler REQ-REP:(15474) 1055060.999975] [network/INFO] Sending '{"now":1055060.999975,"events":[{"timestamp":1055060.999975,"type":"JOB_COMPLETED","data":{"job_id":"w0!1993","job_state":"COMPLETED_WALLTIME_REACHED","return_code":-1,"alloc":"1"}}]}'
+[master_host:Scheduler REQ-REP:(15474) 1055060.999975] [network/INFO] Received '{"now": 1055060.0, "events": [{"timestamp": 1055060.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055070.09}}]}'
+[master_host:waiter 1055070.090000:(15475) 1055060.999990] [jobs_execution/INFO] Sleeping 9.09001 seconds to reach time 1.05507e+06
+[master_host:waiter 1055069.090000:(15473) 1055069.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15476) 1055069.090015] [network/INFO] Sending '{"now":1055069.090015,"events":[{"timestamp":1055069.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15476) 1055069.090015] [network/INFO] Received '{"now": 1055069.0, "events": [{"timestamp": 1055069.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "0", "state": "0"}}]}'
+[0:switch ON 0:(15477) 1055069.090030] [pstate/INFO] Switching machine 0 ('0') OFF. Passing in virtual pstate 3 to do so
+[0:switch ON 0:(15477) 1055069.090030] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch OFF
+[master_host:waiter 1055070.090000:(15475) 1055070.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15478) 1055070.090015] [network/INFO] Sending '{"now":1055070.090015,"events":[{"timestamp":1055070.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15478) 1055070.090015] [network/INFO] Received '{"now": 1055070.0, "events": [{"timestamp": 1055070.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "1", "state": "0"}}]}'
+[1:switch ON 1:(15479) 1055070.090030] [pstate/INFO] Switching machine 1 ('1') OFF. Passing in virtual pstate 3 to do so
+[1:switch ON 1:(15479) 1055070.090030] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch OFF
+[0:switch ON 0:(15477) 1055079.080040] [pstate/INFO] 1 flop has been computed. Switching machine 0 ('0') to sleeping pstate 0
+[master_host:Scheduler REQ-REP:(15480) 1055079.080040] [network/INFO] Sending '{"now":1055079.080040,"events":[{"timestamp":1055079.080040,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"0","state":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15480) 1055079.080040] [network/INFO] Received '{"now": 1055079.0, "events": []}'
+[1:switch ON 1:(15479) 1055080.080040] [pstate/INFO] 1 flop has been computed. Switching machine 1 ('1') to sleeping pstate 0
+[master_host:Scheduler REQ-REP:(15481) 1055080.080040] [network/INFO] Sending '{"now":1055080.080040,"events":[{"timestamp":1055080.080040,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"1","state":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15481) 1055080.080040] [network/INFO] Received '{"now": 1055080.0, "events": []}'
+[master_host:server:(2) 1055119.000030] [server/INFO] Job w0!1994 SUBMITTED. 1994 jobs submitted so far
+[master_host:Scheduler REQ-REP:(15482) 1055119.000030] [network/INFO] Sending '{"now":1055119.000030,"events":[{"timestamp":1055119.000030,"type":"JOB_SUBMITTED","data":{"job_id":"w0!1994","job":{"id":"w0!1994","res":1,"subtime":1055119,"walltime":161,"profile":"100","user_id":0},"profile":{"cpu":100000000,"com":0,"type":"parallel_homogeneous"}}}]}'
+[master_host:Scheduler REQ-REP:(15482) 1055119.000030] [network/INFO] Received '{"now": 1055119.0, "events": [{"timestamp": 1055119.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "0", "state": "1"}}]}'
+[0:switch OFF 0:(15483) 1055119.000045] [pstate/INFO] Switching machine 0 ('0') ON. Passing in virtual pstate 2 to do so
+[0:switch OFF 0:(15483) 1055119.000045] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch ON
+[0:switch OFF 0:(15483) 1055119.999945] [pstate/INFO] 1 flop has been computed. Switching machine 0 ('0') to computing pstate 1
+[master_host:Scheduler REQ-REP:(15484) 1055119.999945] [network/INFO] Sending '{"now":1055119.999945,"events":[{"timestamp":1055119.999945,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"0","state":"1"}}]}'
+[master_host:Scheduler REQ-REP:(15484) 1055119.999945] [network/INFO] Received '{"now": 1055119.0, "events": [{"timestamp": 1055119.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055129.09}}, {"timestamp": 1055119.0, "type": "EXECUTE_JOB", "data": {"job_id": "w0!1994", "alloc": "0"}}]}'
+[master_host:waiter 1055129.090000:(15485) 1055119.999960] [jobs_execution/INFO] Sleeping 9.09004 seconds to reach time 1.05513e+06
+[master_host:waiter 1055129.090000:(15485) 1055129.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15487) 1055129.090015] [network/INFO] Sending '{"now":1055129.090015,"events":[{"timestamp":1055129.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15487) 1055129.090015] [network/INFO] Received '{"now": 1055129.0, "events": []}'
+[master_host:server:(2) 1055179.000030] [server/INFO] Job w0!1995 SUBMITTED. 1995 jobs submitted so far
+[master_host:Scheduler REQ-REP:(15488) 1055179.000030] [network/INFO] Sending '{"now":1055179.000030,"events":[{"timestamp":1055179.000030,"type":"JOB_SUBMITTED","data":{"job_id":"w0!1995","job":{"id":"w0!1995","res":1,"subtime":1055179,"walltime":156,"profile":"100","user_id":0},"profile":{"cpu":100000000,"com":0,"type":"parallel_homogeneous"}}}]}'
+[master_host:Scheduler REQ-REP:(15488) 1055179.000030] [network/INFO] Received '{"now": 1055179.0, "events": [{"timestamp": 1055179.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "1", "state": "1"}}]}'
+[1:switch OFF 1:(15489) 1055179.000045] [pstate/INFO] Switching machine 1 ('1') ON. Passing in virtual pstate 2 to do so
+[1:switch OFF 1:(15489) 1055179.000045] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch ON
+[1:switch OFF 1:(15489) 1055179.999945] [pstate/INFO] 1 flop has been computed. Switching machine 1 ('1') to computing pstate 1
+[master_host:Scheduler REQ-REP:(15490) 1055179.999945] [network/INFO] Sending '{"now":1055179.999945,"events":[{"timestamp":1055179.999945,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"1","state":"1"}}]}'
+[master_host:Scheduler REQ-REP:(15490) 1055179.999945] [network/INFO] Received '{"now": 1055179.0, "events": [{"timestamp": 1055179.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055189.09}}, {"timestamp": 1055179.0, "type": "EXECUTE_JOB", "data": {"job_id": "w0!1995", "alloc": "1"}}]}'
+[master_host:waiter 1055189.090000:(15491) 1055179.999960] [jobs_execution/INFO] Sleeping 9.09004 seconds to reach time 1.05519e+06
+[master_host:waiter 1055189.090000:(15491) 1055189.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15493) 1055189.090015] [network/INFO] Sending '{"now":1055189.090015,"events":[{"timestamp":1055189.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15493) 1055189.090015] [network/INFO] Received '{"now": 1055189.0, "events": []}'
+[master_host:server:(2) 1055192.000030] [server/INFO] Job w0!1996 SUBMITTED. 1996 jobs submitted so far
+[master_host:Scheduler REQ-REP:(15494) 1055192.000030] [network/INFO] Sending '{"now":1055192.000030,"events":[{"timestamp":1055192.000030,"type":"JOB_SUBMITTED","data":{"job_id":"w0!1996","job":{"id":"w0!1996","res":1,"subtime":1055192,"walltime":2274,"profile":"100","user_id":0},"profile":{"cpu":100000000,"com":0,"type":"parallel_homogeneous"}}}]}'
+[master_host:Scheduler REQ-REP:(15494) 1055192.000030] [network/INFO] Received '{"now": 1055192.0, "events": [{"timestamp": 1055192.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "2", "state": "1"}}]}'
+[2:switch OFF 2:(15495) 1055192.000045] [pstate/INFO] Switching machine 2 ('2') ON. Passing in virtual pstate 2 to do so
+[2:switch OFF 2:(15495) 1055192.000045] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch ON
+[2:switch OFF 2:(15495) 1055192.999945] [pstate/INFO] 1 flop has been computed. Switching machine 2 ('2') to computing pstate 1
+[master_host:Scheduler REQ-REP:(15496) 1055192.999945] [network/INFO] Sending '{"now":1055192.999945,"events":[{"timestamp":1055192.999945,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"2","state":"1"}}]}'
+[master_host:Scheduler REQ-REP:(15496) 1055192.999945] [network/INFO] Received '{"now": 1055192.0, "events": [{"timestamp": 1055192.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055202.09}}, {"timestamp": 1055192.0, "type": "EXECUTE_JOB", "data": {"job_id": "w0!1996", "alloc": "2"}}]}'
+[master_host:waiter 1055202.090000:(15497) 1055192.999960] [jobs_execution/INFO] Sleeping 9.09004 seconds to reach time 1.0552e+06
+[master_host:waiter 1055202.090000:(15497) 1055202.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15499) 1055202.090015] [network/INFO] Sending '{"now":1055202.090015,"events":[{"timestamp":1055202.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15499) 1055202.090015] [network/INFO] Received '{"now": 1055202.0, "events": []}'
+[0:job_w0!1994:(15486) 1055219.998975] [jobs_execution/INFO] Job w0!1994 finished in time (success)
+[master_host:server:(2) 1055219.998975] [server/INFO] Job w0!1994 has COMPLETED. 1994 jobs completed so far
+[master_host:Scheduler REQ-REP:(15500) 1055219.998975] [network/INFO] Sending '{"now":1055219.998975,"events":[{"timestamp":1055219.998975,"type":"JOB_COMPLETED","data":{"job_id":"w0!1994","job_state":"COMPLETED_SUCCESSFULLY","return_code":0,"alloc":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15500) 1055219.998975] [network/INFO] Received '{"now": 1055219.0, "events": [{"timestamp": 1055219.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055229.09}}]}'
+[master_host:waiter 1055229.090000:(15501) 1055219.998990] [jobs_execution/INFO] Sleeping 9.09101 seconds to reach time 1.05523e+06
+[master_host:waiter 1055229.090000:(15501) 1055229.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15502) 1055229.090015] [network/INFO] Sending '{"now":1055229.090015,"events":[{"timestamp":1055229.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15502) 1055229.090015] [network/INFO] Received '{"now": 1055229.0, "events": [{"timestamp": 1055229.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "0", "state": "0"}}]}'
+[0:switch ON 0:(15503) 1055229.090030] [pstate/INFO] Switching machine 0 ('0') OFF. Passing in virtual pstate 3 to do so
+[0:switch ON 0:(15503) 1055229.090030] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch OFF
+[0:switch ON 0:(15503) 1055239.080040] [pstate/INFO] 1 flop has been computed. Switching machine 0 ('0') to sleeping pstate 0
+[master_host:Scheduler REQ-REP:(15504) 1055239.080040] [network/INFO] Sending '{"now":1055239.080040,"events":[{"timestamp":1055239.080040,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"0","state":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15504) 1055239.080040] [network/INFO] Received '{"now": 1055239.0, "events": []}'
+[1:job_w0!1995:(15492) 1055279.998975] [jobs_execution/INFO] Job w0!1995 finished in time (success)
+[master_host:server:(2) 1055279.998975] [server/INFO] Job w0!1995 has COMPLETED. 1995 jobs completed so far
+[master_host:Scheduler REQ-REP:(15505) 1055279.998975] [network/INFO] Sending '{"now":1055279.998975,"events":[{"timestamp":1055279.998975,"type":"JOB_COMPLETED","data":{"job_id":"w0!1995","job_state":"COMPLETED_SUCCESSFULLY","return_code":0,"alloc":"1"}}]}'
+[master_host:Scheduler REQ-REP:(15505) 1055279.998975] [network/INFO] Received '{"now": 1055279.0, "events": [{"timestamp": 1055279.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055289.09}}]}'
+[master_host:waiter 1055289.090000:(15506) 1055279.998990] [jobs_execution/INFO] Sleeping 9.09101 seconds to reach time 1.05529e+06
+[master_host:waiter 1055289.090000:(15506) 1055289.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15507) 1055289.090015] [network/INFO] Sending '{"now":1055289.090015,"events":[{"timestamp":1055289.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15507) 1055289.090015] [network/INFO] Received '{"now": 1055289.0, "events": [{"timestamp": 1055289.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "1", "state": "0"}}]}'
+[1:switch ON 1:(15508) 1055289.090030] [pstate/INFO] Switching machine 1 ('1') OFF. Passing in virtual pstate 3 to do so
+[1:switch ON 1:(15508) 1055289.090030] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch OFF
+[2:job_w0!1996:(15498) 1055292.998975] [jobs_execution/INFO] Job w0!1996 finished in time (success)
+[master_host:server:(2) 1055292.998975] [server/INFO] Job w0!1996 has COMPLETED. 1996 jobs completed so far
+[master_host:Scheduler REQ-REP:(15509) 1055292.998975] [network/INFO] Sending '{"now":1055292.998975,"events":[{"timestamp":1055292.998975,"type":"JOB_COMPLETED","data":{"job_id":"w0!1996","job_state":"COMPLETED_SUCCESSFULLY","return_code":0,"alloc":"2"}}]}'
+[master_host:Scheduler REQ-REP:(15509) 1055292.998975] [network/INFO] Received '{"now": 1055292.0, "events": [{"timestamp": 1055292.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055302.09}}]}'
+[master_host:waiter 1055302.090000:(15510) 1055292.998990] [jobs_execution/INFO] Sleeping 9.09101 seconds to reach time 1.0553e+06
+[master_host:server:(2) 1055293.000030] [server/INFO] Job w0!1997 SUBMITTED. 1997 jobs submitted so far
+[master_host:Scheduler REQ-REP:(15511) 1055293.000030] [network/INFO] Sending '{"now":1055293.000030,"events":[{"timestamp":1055293.000030,"type":"JOB_SUBMITTED","data":{"job_id":"w0!1997","job":{"id":"w0!1997","res":1,"subtime":1055293,"walltime":129,"profile":"100","user_id":0},"profile":{"cpu":100000000,"com":0,"type":"parallel_homogeneous"}}}]}'
+[master_host:Scheduler REQ-REP:(15511) 1055293.000030] [network/INFO] Received '{"now": 1055293.0, "events": [{"timestamp": 1055293.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "0", "state": "1"}}]}'
+[0:switch OFF 0:(15512) 1055293.000045] [pstate/INFO] Switching machine 0 ('0') ON. Passing in virtual pstate 2 to do so
+[0:switch OFF 0:(15512) 1055293.000045] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch ON
+[0:switch OFF 0:(15512) 1055293.999945] [pstate/INFO] 1 flop has been computed. Switching machine 0 ('0') to computing pstate 1
+[master_host:Scheduler REQ-REP:(15513) 1055293.999945] [network/INFO] Sending '{"now":1055293.999945,"events":[{"timestamp":1055293.999945,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"0","state":"1"}}]}'
+[master_host:Scheduler REQ-REP:(15513) 1055293.999945] [network/INFO] Received '{"now": 1055293.0, "events": [{"timestamp": 1055293.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055303.09}}, {"timestamp": 1055293.0, "type": "EXECUTE_JOB", "data": {"job_id": "w0!1997", "alloc": "0"}}]}'
+[master_host:waiter 1055303.090000:(15514) 1055293.999960] [jobs_execution/INFO] Sleeping 9.09004 seconds to reach time 1.0553e+06
+[1:switch ON 1:(15508) 1055299.080040] [pstate/INFO] 1 flop has been computed. Switching machine 1 ('1') to sleeping pstate 0
+[master_host:Scheduler REQ-REP:(15516) 1055299.080040] [network/INFO] Sending '{"now":1055299.080040,"events":[{"timestamp":1055299.080040,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"1","state":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15516) 1055299.080040] [network/INFO] Received '{"now": 1055299.0, "events": []}'
+[master_host:waiter 1055302.090000:(15510) 1055302.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15517) 1055302.090015] [network/INFO] Sending '{"now":1055302.090015,"events":[{"timestamp":1055302.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15517) 1055302.090015] [network/INFO] Received '{"now": 1055302.0, "events": [{"timestamp": 1055302.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "2", "state": "0"}}]}'
+[2:switch ON 2:(15518) 1055302.090030] [pstate/INFO] Switching machine 2 ('2') OFF. Passing in virtual pstate 3 to do so
+[2:switch ON 2:(15518) 1055302.090030] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch OFF
+[master_host:waiter 1055303.090000:(15514) 1055303.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15519) 1055303.090015] [network/INFO] Sending '{"now":1055303.090015,"events":[{"timestamp":1055303.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15519) 1055303.090015] [network/INFO] Received '{"now": 1055303.0, "events": []}'
+[2:switch ON 2:(15518) 1055312.080040] [pstate/INFO] 1 flop has been computed. Switching machine 2 ('2') to sleeping pstate 0
+[master_host:Scheduler REQ-REP:(15520) 1055312.080040] [network/INFO] Sending '{"now":1055312.080040,"events":[{"timestamp":1055312.080040,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"2","state":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15520) 1055312.080040] [network/INFO] Received '{"now": 1055312.0, "events": []}'
+[0:job_w0!1997:(15515) 1055393.998975] [jobs_execution/INFO] Job w0!1997 finished in time (success)
+[master_host:server:(2) 1055393.998975] [server/INFO] Job w0!1997 has COMPLETED. 1997 jobs completed so far
+[master_host:Scheduler REQ-REP:(15521) 1055393.998975] [network/INFO] Sending '{"now":1055393.998975,"events":[{"timestamp":1055393.998975,"type":"JOB_COMPLETED","data":{"job_id":"w0!1997","job_state":"COMPLETED_SUCCESSFULLY","return_code":0,"alloc":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15521) 1055393.998975] [network/INFO] Received '{"now": 1055393.0, "events": [{"timestamp": 1055393.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055403.09}}]}'
+[master_host:waiter 1055403.090000:(15522) 1055393.998990] [jobs_execution/INFO] Sleeping 9.09101 seconds to reach time 1.0554e+06
+[master_host:waiter 1055403.090000:(15522) 1055403.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15523) 1055403.090015] [network/INFO] Sending '{"now":1055403.090015,"events":[{"timestamp":1055403.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15523) 1055403.090015] [network/INFO] Received '{"now": 1055403.0, "events": [{"timestamp": 1055403.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "0", "state": "0"}}]}'
+[0:switch ON 0:(15524) 1055403.090030] [pstate/INFO] Switching machine 0 ('0') OFF. Passing in virtual pstate 3 to do so
+[0:switch ON 0:(15524) 1055403.090030] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch OFF
+[0:switch ON 0:(15524) 1055413.080040] [pstate/INFO] 1 flop has been computed. Switching machine 0 ('0') to sleeping pstate 0
+[master_host:Scheduler REQ-REP:(15525) 1055413.080040] [network/INFO] Sending '{"now":1055413.080040,"events":[{"timestamp":1055413.080040,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"0","state":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15525) 1055413.080040] [network/INFO] Received '{"now": 1055413.0, "events": []}'
+[master_host:server:(2) 1055679.000030] [server/INFO] Job w0!1998 SUBMITTED. 1998 jobs submitted so far
+[master_host:Scheduler REQ-REP:(15526) 1055679.000030] [network/INFO] Sending '{"now":1055679.000030,"events":[{"timestamp":1055679.000030,"type":"JOB_SUBMITTED","data":{"job_id":"w0!1998","job":{"id":"w0!1998","res":1,"subtime":1055679,"walltime":24,"profile":"100","user_id":0},"profile":{"cpu":100000000,"com":0,"type":"parallel_homogeneous"}}}]}'
+[master_host:Scheduler REQ-REP:(15526) 1055679.000030] [network/INFO] Received '{"now": 1055679.0, "events": [{"timestamp": 1055679.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "0", "state": "1"}}]}'
+[0:switch OFF 0:(15527) 1055679.000045] [pstate/INFO] Switching machine 0 ('0') ON. Passing in virtual pstate 2 to do so
+[0:switch OFF 0:(15527) 1055679.000045] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch ON
+[0:switch OFF 0:(15527) 1055679.999945] [pstate/INFO] 1 flop has been computed. Switching machine 0 ('0') to computing pstate 1
+[master_host:Scheduler REQ-REP:(15528) 1055679.999945] [network/INFO] Sending '{"now":1055679.999945,"events":[{"timestamp":1055679.999945,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"0","state":"1"}}]}'
+[master_host:Scheduler REQ-REP:(15528) 1055679.999945] [network/INFO] Received '{"now": 1055679.0, "events": [{"timestamp": 1055679.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055689.09}}, {"timestamp": 1055679.0, "type": "EXECUTE_JOB", "data": {"job_id": "w0!1998", "alloc": "0"}}]}'
+[master_host:waiter 1055689.090000:(15529) 1055679.999960] [jobs_execution/INFO] Sleeping 9.09004 seconds to reach time 1.05569e+06
+[master_host:waiter 1055689.090000:(15529) 1055689.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15531) 1055689.090015] [network/INFO] Sending '{"now":1055689.090015,"events":[{"timestamp":1055689.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15531) 1055689.090015] [network/INFO] Received '{"now": 1055689.0, "events": []}'
+[0:job_w0!1998:(15530) 1055703.999975] [jobs_execution/INFO] Job w0!1998 had been killed (walltime 24 reached)
+[master_host:server:(2) 1055703.999975] [server/INFO] Job w0!1998 has COMPLETED. 1998 jobs completed so far
+[master_host:Scheduler REQ-REP:(15532) 1055703.999975] [network/INFO] Sending '{"now":1055703.999975,"events":[{"timestamp":1055703.999975,"type":"JOB_COMPLETED","data":{"job_id":"w0!1998","job_state":"COMPLETED_WALLTIME_REACHED","return_code":-1,"alloc":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15532) 1055703.999975] [network/INFO] Received '{"now": 1055703.0, "events": [{"timestamp": 1055703.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055713.09}}]}'
+[master_host:waiter 1055713.090000:(15533) 1055703.999990] [jobs_execution/INFO] Sleeping 9.09001 seconds to reach time 1.05571e+06
+[master_host:waiter 1055713.090000:(15533) 1055713.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15534) 1055713.090015] [network/INFO] Sending '{"now":1055713.090015,"events":[{"timestamp":1055713.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15534) 1055713.090015] [network/INFO] Received '{"now": 1055713.0, "events": [{"timestamp": 1055713.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "0", "state": "0"}}]}'
+[0:switch ON 0:(15535) 1055713.090030] [pstate/INFO] Switching machine 0 ('0') OFF. Passing in virtual pstate 3 to do so
+[0:switch ON 0:(15535) 1055713.090030] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch OFF
+[master_host:server:(2) 1055714.000030] [server/INFO] Job w0!1999 SUBMITTED. 1999 jobs submitted so far
+[master_host:Scheduler REQ-REP:(15536) 1055714.000030] [network/INFO] Sending '{"now":1055714.000030,"events":[{"timestamp":1055714.000030,"type":"JOB_SUBMITTED","data":{"job_id":"w0!1999","job":{"id":"w0!1999","res":1,"subtime":1055714,"walltime":25,"profile":"100","user_id":0},"profile":{"cpu":100000000,"com":0,"type":"parallel_homogeneous"}}}]}'
+[master_host:Scheduler REQ-REP:(15536) 1055714.000030] [network/INFO] Received '{"now": 1055714.0, "events": []}'
+[0:switch ON 0:(15535) 1055723.080040] [pstate/INFO] 1 flop has been computed. Switching machine 0 ('0') to sleeping pstate 0
+[master_host:Scheduler REQ-REP:(15537) 1055723.080040] [network/INFO] Sending '{"now":1055723.080040,"events":[{"timestamp":1055723.080040,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"0","state":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15537) 1055723.080040] [network/INFO] Received '{"now": 1055723.0, "events": [{"timestamp": 1055723.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "0", "state": "1"}}]}'
+[0:switch OFF 0:(15538) 1055723.080055] [pstate/INFO] Switching machine 0 ('0') ON. Passing in virtual pstate 2 to do so
+[0:switch OFF 0:(15538) 1055723.080055] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch ON
+[0:switch OFF 0:(15538) 1055724.079955] [pstate/INFO] 1 flop has been computed. Switching machine 0 ('0') to computing pstate 1
+[master_host:Scheduler REQ-REP:(15539) 1055724.079955] [network/INFO] Sending '{"now":1055724.079955,"events":[{"timestamp":1055724.079955,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"0","state":"1"}}]}'
+[master_host:Scheduler REQ-REP:(15539) 1055724.079955] [network/INFO] Received '{"now": 1055724.0, "events": [{"timestamp": 1055724.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055734.09}}, {"timestamp": 1055724.0, "type": "EXECUTE_JOB", "data": {"job_id": "w0!1999", "alloc": "0"}}]}'
+[master_host:waiter 1055734.090000:(15540) 1055724.079970] [jobs_execution/INFO] Sleeping 10.01 seconds to reach time 1.05573e+06
+[master_host:waiter 1055734.090000:(15540) 1055734.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15542) 1055734.090015] [network/INFO] Sending '{"now":1055734.090015,"events":[{"timestamp":1055734.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15542) 1055734.090015] [network/INFO] Received '{"now": 1055734.0, "events": []}'
+[0:job_w0!1999:(15541) 1055749.079985] [jobs_execution/INFO] Job w0!1999 had been killed (walltime 25 reached)
+[master_host:server:(2) 1055749.079985] [server/INFO] Job w0!1999 has COMPLETED. 1999 jobs completed so far
+[master_host:Scheduler REQ-REP:(15543) 1055749.079985] [network/INFO] Sending '{"now":1055749.079985,"events":[{"timestamp":1055749.079985,"type":"JOB_COMPLETED","data":{"job_id":"w0!1999","job_state":"COMPLETED_WALLTIME_REACHED","return_code":-1,"alloc":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15543) 1055749.079985] [network/INFO] Received '{"now": 1055749.0, "events": [{"timestamp": 1055749.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055759.09}}]}'
+[master_host:waiter 1055759.090000:(15544) 1055749.080000] [jobs_execution/INFO] Sleeping 10.01 seconds to reach time 1.05576e+06
+[master_host:waiter 1055759.090000:(15544) 1055759.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15545) 1055759.090015] [network/INFO] Sending '{"now":1055759.090015,"events":[{"timestamp":1055759.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15545) 1055759.090015] [network/INFO] Received '{"now": 1055759.0, "events": [{"timestamp": 1055759.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "0", "state": "0"}}]}'
+[0:switch ON 0:(15546) 1055759.090030] [pstate/INFO] Switching machine 0 ('0') OFF. Passing in virtual pstate 3 to do so
+[0:switch ON 0:(15546) 1055759.090030] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch OFF
+[master_host:server:(2) 1055762.000030] [server/INFO] Job w0!2000 SUBMITTED. 2000 jobs submitted so far
+[master_host:Scheduler REQ-REP:(15547) 1055762.000030] [network/INFO] Sending '{"now":1055762.000030,"events":[{"timestamp":1055762.000030,"type":"JOB_SUBMITTED","data":{"job_id":"w0!2000","job":{"id":"w0!2000","res":1,"subtime":1055762,"walltime":24,"profile":"100","user_id":0},"profile":{"cpu":100000000,"com":0,"type":"parallel_homogeneous"}}}]}'
+[master_host:Scheduler REQ-REP:(15547) 1055762.000030] [network/INFO] Received '{"now": 1055762.0, "events": []}'
+[master_host:Scheduler REQ-REP:(15548) 1055762.000060] [network/INFO] Sending '{"now":1055762.000060,"events":[{"timestamp":1055762.000045,"type":"NOTIFY","data":{"type":"no_more_static_job_to_submit"}}]}'
+[master_host:Scheduler REQ-REP:(15548) 1055762.000060] [network/INFO] Received '{"now": 1055762.0, "events": []}'
+[0:switch ON 0:(15546) 1055769.080040] [pstate/INFO] 1 flop has been computed. Switching machine 0 ('0') to sleeping pstate 0
+[master_host:Scheduler REQ-REP:(15549) 1055769.080040] [network/INFO] Sending '{"now":1055769.080040,"events":[{"timestamp":1055769.080040,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"0","state":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15549) 1055769.080040] [network/INFO] Received '{"now": 1055769.0, "events": [{"timestamp": 1055769.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "0", "state": "1"}}]}'
+[0:switch OFF 0:(15550) 1055769.080055] [pstate/INFO] Switching machine 0 ('0') ON. Passing in virtual pstate 2 to do so
+[0:switch OFF 0:(15550) 1055769.080055] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch ON
+[0:switch OFF 0:(15550) 1055770.079955] [pstate/INFO] 1 flop has been computed. Switching machine 0 ('0') to computing pstate 1
+[master_host:Scheduler REQ-REP:(15551) 1055770.079955] [network/INFO] Sending '{"now":1055770.079955,"events":[{"timestamp":1055770.079955,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"0","state":"1"}}]}'
+[master_host:Scheduler REQ-REP:(15551) 1055770.079955] [network/INFO] Received '{"now": 1055770.0, "events": [{"timestamp": 1055770.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055780.09}}, {"timestamp": 1055770.0, "type": "EXECUTE_JOB", "data": {"job_id": "w0!2000", "alloc": "0"}}]}'
+[master_host:waiter 1055780.090000:(15552) 1055770.079970] [jobs_execution/INFO] Sleeping 10.01 seconds to reach time 1.05578e+06
+[master_host:waiter 1055780.090000:(15552) 1055780.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15554) 1055780.090015] [network/INFO] Sending '{"now":1055780.090015,"events":[{"timestamp":1055780.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15554) 1055780.090015] [network/INFO] Received '{"now": 1055780.0, "events": []}'
+[0:job_w0!2000:(15553) 1055794.079985] [jobs_execution/INFO] Job w0!2000 had been killed (walltime 24 reached)
+[master_host:server:(2) 1055794.079985] [server/INFO] Job w0!2000 has COMPLETED. 2000 jobs completed so far
+[master_host:Scheduler REQ-REP:(15555) 1055794.079985] [network/INFO] Sending '{"now":1055794.079985,"events":[{"timestamp":1055794.079985,"type":"JOB_COMPLETED","data":{"job_id":"w0!2000","job_state":"COMPLETED_WALLTIME_REACHED","return_code":-1,"alloc":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15555) 1055794.079985] [network/INFO] Received '{"now": 1055794.0, "events": [{"timestamp": 1055794.0, "type": "CALL_ME_LATER", "data": {"timestamp": 1055804.09}}]}'
+[master_host:waiter 1055804.090000:(15556) 1055794.080000] [jobs_execution/INFO] Sleeping 10.01 seconds to reach time 1.0558e+06
+[master_host:waiter 1055804.090000:(15556) 1055804.090000] [jobs_execution/INFO] Sleeping done
+[master_host:Scheduler REQ-REP:(15557) 1055804.090015] [network/INFO] Sending '{"now":1055804.090015,"events":[{"timestamp":1055804.090015,"type":"REQUESTED_CALL","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15557) 1055804.090015] [network/INFO] Received '{"now": 1055804.0, "events": [{"timestamp": 1055804.0, "type": "SET_RESOURCE_STATE", "data": {"resources": "0", "state": "0"}}]}'
+[0:switch ON 0:(15558) 1055804.090030] [pstate/INFO] Switching machine 0 ('0') OFF. Passing in virtual pstate 3 to do so
+[0:switch ON 0:(15558) 1055804.090030] [pstate/INFO] Computing 1 flop to simulate time & energy cost of switch OFF
+[0:switch ON 0:(15558) 1055814.080040] [pstate/INFO] 1 flop has been computed. Switching machine 0 ('0') to sleeping pstate 0
+[master_host:Scheduler REQ-REP:(15559) 1055814.080040] [network/INFO] Sending '{"now":1055814.080040,"events":[{"timestamp":1055814.080040,"type":"RESOURCE_STATE_CHANGED","data":{"resources":"0","state":"0"}}]}'
+[master_host:Scheduler REQ-REP:(15559) 1055814.080040] [network/INFO] Received '{"now": 1055814.0, "events": []}'
+[master_host:server:(2) 1055814.080055] [server/INFO] The simulation seems finished.
+[master_host:Scheduler REQ-REP:(15560) 1055814.080055] [network/INFO] Sending '{"now":1055814.080055,"events":[{"timestamp":1055814.080055,"type":"SIMULATION_ENDS","data":{}}]}'
+[master_host:Scheduler REQ-REP:(15560) 1055814.080055] [network/INFO] Received '{"now": 1055814.0, "events": []}'
+[master_host:server:(2) 1055814.080070] [server/INFO] Simulation is finished!
+[1055814.080070] [export/INFO] jobs=2000, finished=2000, success=1690, killed=310, success_rate=0.845000
+[1055814.080070] [export/INFO] makespan=1055794.079985, scheduling_time=3.188339, mean_waiting_time=63.604466, mean_turnaround_time=153.708621, mean_slowdown=1.786717, max_waiting_time=632.993275, max_turnaround_time=732.992275, max_slowdown=32.499275
+[1055814.080070] [export/INFO] mean_machines_running=22934.034741, max_machines_running=63263.421006
