@@ -65,38 +65,39 @@ def run_simulation(shutdown_policy):
     simulator.close()
 
     # 4) Return/Dump statistics
-    return sim_mon, host_mon, e_mon
+    return sim_mon, host_mon, e_mon, simulator
 
-sim_none, host_none, e_none = run_simulation(lambda s: None) # Without shutdown
-sim_t1, host_t1, e_t1 = run_simulation(lambda s: TimeoutPolicy(1800, s)) # Timeout (1)
-sim_t5, host_t5, e_t5 = run_simulation(lambda s: TimeoutPolicy(3600, s)) # Timeout (5)
+sim_none, host_none, e_none, simulator_none = run_simulation(lambda s: None) # Without shutdown
+sim_t10s, host_t10s, e_t10s, simulator_t10s = run_simulation(lambda s: TimeoutPolicy(10, s)) # Timeout (1)
+sim_t1, host_t1, e_t1, simulator_t1 = run_simulation(lambda s: TimeoutPolicy(1800, s)) # Timeout (1)
+sim_t5, host_t5, e_t5, simulator_t5 = run_simulation(lambda s: TimeoutPolicy(3600, s)) # Timeout (5)
 
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
+# exit()
 
-# Read results
-none, t_1, t_5 = sim_none.to_dataframe(), sim_t1.to_dataframe(), sim_t5.to_dataframe()
-none['name'], t_1['name'], t_5['name'] = "None", "Timeout (1)", "Timeout (5)"
-benchmark = pd.concat([none, t_1, t_5], ignore_index=True)
-benchmark['mean_slowdown'] = np.log(benchmark['mean_slowdown'])
-benchmark['consumed_joules'] = np.log(benchmark['consumed_joules'])
-# Slowdown
-plt.figure(figsize=(12,4))
-plt.subplot(1, 2, 1)
-plt.plot('name', 'mean_slowdown', data=benchmark)
-plt.grid(axis='y')
-plt.ylabel("Averaged Slowdown (s)")
+def F(mean_slowdown , consumed_joules, max_consumed_joules, alpha = 0.5, beta = 0.5, is_normalized = True):
+    if is_normalized:
+        consumed_joules = consumed_joules/max_consumed_joules
+    return alpha * mean_slowdown + beta * consumed_joules
 
-# Energy consumed
-plt.subplot(1, 2, 2)
-plt.plot('name', 'consumed_joules', data=benchmark)
-plt.grid(axis='y')
-plt.ylabel("Energy Consumed (J)")
+def compute_score(sim_mon, sim_handler, alpha=0.5, beta=0.5, is_normalized=True):
+  platform = sim_handler.platform
+  hosts = platform.hosts
+  total_max_watt_per_min = 0
+  for host in hosts:
+    max_watt_per_min = 0
+    for pstate in host.pstates:
+      max_watt_per_min = max(max_watt_per_min, pstate.watt_full)
+    total_max_watt_per_min += max_watt_per_min
 
-# Show
-plt.show()
+  total_time = simulator_none.current_time
+  max_consumed_joules = total_time*total_max_watt_per_min
+  consumed_joules = sim_mon.info["consumed_joules"]
+  mean_slowdown = sim_mon.info["mean_slowdown"]
+  score = F(mean_slowdown, consumed_joules, max_consumed_joules)
+  return score
 
-F1 = 
-F2 =  
+print(compute_score(sim_none, simulator_none))
+print(compute_score(sim_t1, simulator_t1))
+print(compute_score(sim_t5, simulator_t5))
+print(compute_score(sim_t10s, simulator_t10s))
