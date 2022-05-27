@@ -67,20 +67,55 @@ def run_simulation(shutdown_policy, workload_filename):
     # 4) Return/Dump statistics
     return sim_mon, host_mon, e_mon, simulator
 
+simulation_results = []
+dataset_names = []
+timeouts = []
 
-sim_s1, host_s1, e_s1, simulator_s1 = run_simulation(lambda s: TimeoutPolicy(1800, s), "workloads-gaia.json") # Simulation 1: Timeout (30 minute) Dataset (Gaia)
-sim_s2, host_s2, e_s2, simulator_s2 = run_simulation(lambda s: TimeoutPolicy(3600, s), "workloads-gaia.json") # Simulation 2: Timeout (60 minute) Dataset (Gaia)
-sim_s3, host_s3, e_s3, simulator_s3 = run_simulation(lambda s: TimeoutPolicy(1800, s), "workloads-nasa.json") # Simulation 3: Timeout (30 minute) Dataset (NASA)
-sim_s4, host_s4, e_s4, simulator_s4 = run_simulation(lambda s: TimeoutPolicy(3600, s), "workloads-nasa.json") # Simulation 4: Timeout (60 minute) Dataset (NASA)
-sim_s5, host_s5, e_s5, simulator_s5 = run_simulation(lambda s: TimeoutPolicy(1800, s), "workloads-lpc.json") # Simulation 5: Timeout (30 minute) Dataset (LPC)
-sim_s6, host_s6, e_s6, simulator_s6 = run_simulation(lambda s: TimeoutPolicy(3600, s), "workloads-lpc.json") # Simulation 6: Timeout (60 minute) Dataset (LPC)
-sim_s7, host_s7, e_s7, simulator_s7 = run_simulation(lambda s: TimeoutPolicy(1800, s), "workloads-llnl.json") # Simulation 7: Timeout (30 minute) Dataset (LLNL)
-sim_s8, host_s8, e_s8, simulator_s8 = run_simulation(lambda s: TimeoutPolicy(3600, s), "workloads-llnl.json") # Simulation 8: Timeout (60 minute) Dataset (LLNL)
 
-simulation_monitors = [sim_s1, sim_s2, sim_s3, sim_s4, sim_s5, sim_s6, sim_s7, sim_s8]
-host_monitors = [host_s1, host_s2, host_s3, host_s4, host_s5, host_s6, host_s7, host_s8]
-energy_monitors = [e_s1, e_s2, e_s3, e_s4, e_s5, e_s6, e_s7, e_s8]
-simulators = [simulator_s1, simulator_s2, simulator_s3, simulator_s4, simulator_s5, simulator_s6, simulator_s7, simulator_s8]
+sim_res_1 = run_simulation(lambda s: TimeoutPolicy(1800, s), "workloads-gaia.json") # Simulation 1: Timeout (30 minute) Dataset (Gaia)
+simulation_results += [sim_res_1]
+dataset_names += ["Gaia"]
+timeouts += ["30mins"]
+sim_res_2 = run_simulation(lambda s: TimeoutPolicy(3600, s), "workloads-gaia.json") # Simulation 2: Timeout (60 minute) Dataset (Gaia)
+simulation_results += [sim_res_2]
+dataset_names += ["Gaia"]
+timeouts += ["60mins"]
+sim_res_3 = run_simulation(lambda s: TimeoutPolicy(1800, s), "workloads-nasa.json") # Simulation 3: Timeout (30 minute) Dataset (NASA)
+simulation_results += [sim_res_3]
+dataset_names += ["NASA"]
+timeouts += ["30mins"]
+sim_res_4 = run_simulation(lambda s: TimeoutPolicy(3600, s), "workloads-nasa.json") # Simulation 4: Timeout (60 minute) Dataset (NASA)
+simulation_results += [sim_res_4]
+dataset_names += ["NASA"]
+timeouts += ["60mins"]
+sim_res_5 = run_simulation(lambda s: TimeoutPolicy(1800, s), "workloads-lpc.json") # Simulation 5: Timeout (30 minute) Dataset (LPC)
+simulation_results += [sim_res_5]
+dataset_names += ["LPC"]
+timeouts += ["30mins"]
+sim_res_6 = run_simulation(lambda s: TimeoutPolicy(3600, s), "workloads-lpc.json") # Simulation 6: Timeout (60 minute) Dataset (LPC)
+simulation_results += [sim_res_6]
+dataset_names += ["LPC"]
+timeouts += ["60mins"]
+sim_res_7 = run_simulation(lambda s: TimeoutPolicy(1800, s), "workloads-llnl.json") # Simulation 7: Timeout (30 minute) Dataset (LLNL)
+simulation_results += [sim_res_7]
+dataset_names += ["LLNL"]
+timeouts += ["30mins"]
+sim_res_8 = run_simulation(lambda s: TimeoutPolicy(3600, s), "workloads-llnl.json") # Simulation 8: Timeout (60 minute) Dataset (LLNL)
+simulation_results += [sim_res_8]
+dataset_names += ["LLNL"]
+timeouts += ["60mins"]
+
+simulation_monitors = []
+host_monitors = []
+energy_monitors = []
+simulators = []
+
+for i in range(len(simulation_results)):
+    sim_mon, host_mon, e_mon, simulator = simulation_results[i]
+    simulation_monitors += [sim_mon]
+    host_monitors += [host_mon]
+    energy_monitors += [e_mon]
+    simulators += [simulator]
 
 def F(mean_slowdown , consumed_joules, max_consumed_joules, alpha, beta, is_normalized):
     if is_normalized:
@@ -108,14 +143,12 @@ import csv
 
 header = ['dataset', 'timeout', 'f(1,0)=slowdown', 'f(0,1)=energy', 'f(0.5,0.5)=balance']
 
-dataset = ["Gaia", "NASA", "LPC", "LLNL"]
-timeout = ["30mins", "60mins"]
 
 data = []
-for i in range(8):
+for i in range(len(simulation_results)):
     row = []
-    row.append(dataset[i//2])
-    row.append(timeout[i%2])
+    row.append(dataset_names[i])
+    row.append(timeouts[i])
     row.append(compute_score(simulation_monitors[i], simulators[i], 1, 0))
     row.append(compute_score(simulation_monitors[i], simulators[i], 0, 1))
     row.append(compute_score(simulation_monitors[i], simulators[i], 0.5, 0.5))
