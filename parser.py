@@ -37,7 +37,7 @@ with open(filename) as fh:
         else:
             job["res"] = int(description[4])
         
-        if int(description[4]) <= 0:
+        if int(description[3]) <= 0:
             job["walltime"] = 1
         else:
             job["walltime"] = int(description[3])
