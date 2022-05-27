@@ -72,14 +72,14 @@ dataset_names = []
 timeouts = []
 
 
-sim_res_1 = run_simulation(lambda s: TimeoutPolicy(1800, s), "workloads-gaia.json") # Simulation 1: Timeout (30 minute) Dataset (Gaia)
-simulation_results += [sim_res_1]
-dataset_names += ["Gaia"]
-timeouts += ["30mins"]
-sim_res_2 = run_simulation(lambda s: TimeoutPolicy(3600, s), "workloads-gaia.json") # Simulation 2: Timeout (60 minute) Dataset (Gaia)
-simulation_results += [sim_res_2]
-dataset_names += ["Gaia"]
-timeouts += ["60mins"]
+# sim_res_1 = run_simulation(lambda s: TimeoutPolicy(1800, s), "workloads-gaia.json") # Simulation 1: Timeout (30 minute) Dataset (Gaia)
+# simulation_results += [sim_res_1]
+# dataset_names += ["Gaia"]
+# timeouts += ["30mins"]
+# sim_res_2 = run_simulation(lambda s: TimeoutPolicy(3600, s), "workloads-gaia.json") # Simulation 2: Timeout (60 minute) Dataset (Gaia)
+# simulation_results += [sim_res_2]
+# dataset_names += ["Gaia"]
+# timeouts += ["60mins"]
 sim_res_3 = run_simulation(lambda s: TimeoutPolicy(1800, s), "workloads-nasa.json") # Simulation 3: Timeout (30 minute) Dataset (NASA)
 simulation_results += [sim_res_3]
 dataset_names += ["NASA"]
