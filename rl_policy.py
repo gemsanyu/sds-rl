@@ -54,6 +54,7 @@ class RLPolicy:
         self.simulator.set_callback(t_next_call, self.callback)
 
     def callback(self, current_time: float) -> None:
+
         # print2 feature2 dulu sementara
         print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", current_time)
         print(self.job_monitor.info)
@@ -62,7 +63,12 @@ class RLPolicy:
         print()
         # compute mean arrival rate
         # get last 50 elements if exists
-        
+
+        # compute rewards dari action sebelumnya
+        # prepare features dan masking (node yg sedang busy ga boleh dimatikan)
+        # shutdown nodes
+        # 
+
         self.setup_callback()
         # for host_id, t_idle_start in list(self.hosts_idle.items()):
         #     if  current_time - t_idle_start >= self.t_timeout:

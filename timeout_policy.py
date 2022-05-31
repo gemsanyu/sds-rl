@@ -18,10 +18,13 @@ class TimeoutPolicy:
                 self.setup_callback()
 
     def on_host_state_changed(self, h: Host) -> None:
-        if h.is_idle and not h.id in self.hosts_idle:
+        host_really_idle = h.is_idle and not h.is_allocated
+        if h.is_idle and h.is_allocated:
+            print("A HOST IS IDLE BUT ALLOCATED?")
+        if host_really_idle and (not h.id in self.hosts_idle):
             self.hosts_idle[h.id] = self.simulator.current_time
             self.setup_callback()
-        elif not h.is_idle and h.id in self.hosts_idle:
+        elif not host_really_idle and h.id in self.hosts_idle:
             del self.hosts_idle[h.id]
 
     def setup_callback(self) -> None:
