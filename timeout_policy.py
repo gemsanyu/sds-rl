@@ -34,4 +34,8 @@ class TimeoutPolicy:
     def callback(self, current_time: float) -> None:
         for host_id, t_idle_start in list(self.hosts_idle.items()):
             if  current_time - t_idle_start >= self.t_timeout:
-                self.simulator.switch_off([host_id])
+                try:
+                    self.simulator.switch_off([host_id])
+                except RuntimeError:
+                    host = self.simulator.platform.get_host(host_id)
+                    print("host is :", host)

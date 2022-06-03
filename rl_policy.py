@@ -1,9 +1,9 @@
 from batsim_py import SimulatorHandler
 from batsim_py.events import HostEvent, SimulatorEvent
 from batsim_py.resources import Host
-
 from batsim_py.monitors import SimulationMonitor, HostStateSwitchMonitor, ConsumedEnergyMonitor, JobMonitor
 
+import numpy as np
 """
 kita tiru shutdown policy
 si simulator akan subcribe ke sebuah callback function setiap dtime
@@ -37,27 +37,33 @@ class RLPolicy:
         self.job_monitor = job_monitor
 
     def on_simulation_begins(self, s: SimulatorHandler) -> None:
-        for host in s.platform.hosts:
-            if host.is_idle:
-                self.hosts_idle[host.id] = s.current_time
-                self.setup_callback()
-
-    # def on_host_state_changed(self, h: Host) -> None:
-    #     if h.is_idle and not h.id in self.hosts_idle:
-    #         self.hosts_idle[h.id] = self.simulator.current_time
-    #         self.setup_callback()
-    #     elif not h.is_idle and h.id in self.hosts_idle:
-    #         del self.hosts_idle[h.id]
+        self.setup_callback()
 
     def setup_callback(self) -> None:
-        t_next_call = self.simulator.current_time + self.dtime
+        t_next_call = self.simulator.current_time +5000
         self.simulator.set_callback(t_next_call, self.callback)
 
     def callback(self, current_time: float) -> None:
 
         # print2 feature2 dulu sementara
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", current_time)
-        print(self.job_monitor.info)
+        print("CURRENT TIME", current_time)
+        print("PLATFORM Features")
+        print("switch on dan switch off time langsung dikirim ke batsim, ga ada di batsimpy")
+        print("1. switch on: 1 second")
+        print("2. switch off: 10 seconds")
+        
+        print("SIMULATOR FEATURES")
+        print("1. jumlah jobs di queue:", len(self.simulator.queue))
+        print("2. arrival rate:")
+        submission_time = self.job_monitor.info["submission_time"]
+        print("---overall arrival rate (not&normalized):",get_arrival_rate(submission_time, False), get_arrival_rate(submission_time, True))
+        print("---last 100 jobs arrival rate (not&normalized):",get_arrival_rate(submission_time[-100:], False), get_arrival_rate(submission_time[-100:], True) )
+        print("3. mean runtime jobs in queue:")
+        if len(self.simulator.queue) > 0:
+            exit()
+        # print(self.host_monitor.info)
+        # print(self.job_monitor.info)s
+        # exit()
         print()
         print()
         print()
@@ -73,3 +79,18 @@ class RLPolicy:
         # for host_id, t_idle_start in list(self.hosts_idle.items()):
         #     if  current_time - t_idle_start >= self.t_timeout:
         #         self.simulator.switch_off([host_id])
+
+def get_arrival_rate(submission_times, normalized=True):
+    if len(submission_times) == 0:
+        return 0
+    if len(submission_times) == 1:
+        return submission_times[0]
+    submission_times = np.asarray(submission_times)
+    submission_times -= submission_times[0]
+    max_time = submission_times[-1]
+    submission_times_r = np.roll(submission_times, 1)  
+    submission_times -= submission_times_r
+    arrival_rate = np.mean(submission_times[1:])
+    if normalized:
+        arrival_rate /= max_time
+    return arrival_rate

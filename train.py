@@ -63,9 +63,9 @@ if __name__ == "__main__":
     
     parser = define_args_parser()
     args = parser.parse_args(sys.argv[1:])
-    to_policy = lambda s: TimeoutPolicy(args.timeout, s)
+    # to_policy = lambda s: TimeoutPolicy(args.timeout, s)
     start = time()
-    sim_mon, host_mon, e_mon, simulator = run_simulation(to_policy, args.workload_path, args.platform_path) # Simulation 1: Timeout (30 minute) Dataset (Gaia)
+    sim_mon, host_mon, e_mon, simulator = run_simulation(None, args.workload_path, args.platform_path) # Simulation 1: Timeout (30 minute) Dataset (Gaia)
     end = time()
     walltime = end-start
     header = ['dataset', 'timeout', 'f(1,0)=slowdown', 'f(0,1)=energy', 'f(0.5,0.5)=balance', "experiment walltime"]
