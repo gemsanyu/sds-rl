@@ -1,7 +1,7 @@
 import json
 import math
 
-num_of_res = 8
+num_of_res = 128
 
 job_list = []
 fields =['id', 'res', 'subtime', 'walltime', 'profile', 'user_id']
@@ -11,7 +11,7 @@ base_profile_dict = {"100": p_dict}
 
 # the file to be converted to 
 # json format
-filename = 'raw/gaia.txt'
+filename = 'raw/llnl.txt'
 
 max_res = 0
   
@@ -28,8 +28,6 @@ with open(filename) as fh:
         # intermediate dictionary
         job = {"id": 0, "res": 0, "subtime": 0, "walltime": 0, "profile": "100", "user_id": 0}
         job["id"] = int(description[0])
-        # lpc job["res"] = int(description[5])
-        # gaia llnl nasa job["res"] = int(description[4])
         job["subtime"] = int(description[1])
 
         if int(description[4]) <= 0:
@@ -38,7 +36,7 @@ with open(filename) as fh:
             job["res"] = int(description[4])
         
         if int(description[3]) <= 0:
-            job["walltime"] = 1
+            continue
         else:
             job["walltime"] = int(description[3])
 
@@ -55,6 +53,6 @@ for job in job_list:
 workloads = {"nb_res": num_of_res, "jobs": job_list, "profiles": base_profile_dict}
 
 # creating json file        
-out_file = open("workloads-gaia.json", "w")
+out_file = open("workloads-llnl-cleaned-128host.json", "w")
 json.dump(workloads, out_file, indent = 4)
 out_file.close()
