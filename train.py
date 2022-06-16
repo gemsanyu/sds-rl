@@ -5,7 +5,7 @@ from time import time
 
 from batsim_py import SimulatorHandler
 from batsim_py import SimulatorHandler
-from batsim_py.monitors import SimulationMonitor, HostStateSwitchMonitor, ConsumedEnergyMonitor, JobMonitor
+from batsim_py.monitors import SimulationMonitor, HostMonitor, ConsumedEnergyMonitor, JobMonitor
 
 from easy_backfilling import EASYScheduler
 from rl_policy import RLPolicy
@@ -18,7 +18,7 @@ def run_simulation(shutdown_policy, workload_filename, platform_path):
 
     # 1) Instantiate monitors to collect simulation statistics
     sim_mon = SimulationMonitor(simulator)
-    host_mon = HostStateSwitchMonitor(simulator)
+    host_mon = HostMonitor(simulator)
     e_mon = ConsumedEnergyMonitor(simulator)
     job_mon = JobMonitor(simulator)
 

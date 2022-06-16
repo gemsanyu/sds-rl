@@ -1,6 +1,6 @@
 from batsim_py import SimulatorHandler
 from batsim_py.events import HostEvent, SimulatorEvent
-from batsim_py.resources import Host
+from batsim_py.resources import Host, HostState
 from batsim_py.monitors import SimulationMonitor, HostStateSwitchMonitor, ConsumedEnergyMonitor, JobMonitor
 
 import numpy as np
@@ -58,9 +58,19 @@ class RLPolicy:
         submission_time = self.job_monitor.info["submission_time"]
         print("---overall arrival rate (not&normalized):",get_arrival_rate(submission_time, False), get_arrival_rate(submission_time, True))
         print("---last 100 jobs arrival rate (not&normalized):",get_arrival_rate(submission_time[-100:], False), get_arrival_rate(submission_time[-100:], True) )
-        print("3. mean runtime jobs in queue:")
-        if len(self.simulator.queue) > 0:
-            exit()
+        hosts = self.simulator.platform.hosts
+        print("3. mean runtime di tiap node yg running:", get_mean_runtime_nodes(hosts, normalized=False), get_mean_runtime_nodes(hosts, normalized=False))
+        queue = self.simulator.queue
+        print("4. current mean waiting time:", get_mean_waittime_queue(queue, current_time, False), get_mean_waittime_queue(queue, current_time, True))
+        self.host_monitor.update_info_all()
+        print("5. Wasted energy (Joule):", get_wasted_energy(self.energy_monitor, self.host_monitor, False), get_wasted_energy(self.energy_monitor, self.host_monitor, True))
+        print("6. mean requested walltime jobs in queue:", get_mean_walltime_in_queue(queue, False), get_mean_walltime_in_queue(queue,True))
+        
+        node_features = np.zeros(())
+        print("NODE FEATURES")
+        print(self.simulator.platform.state)
+        exit()
+        print("1. ON/OFF")
         # print(self.host_monitor.info)
         # print(self.job_monitor.info)s
         # exit()
@@ -94,3 +104,43 @@ def get_arrival_rate(submission_times, normalized=True):
     if normalized:
         arrival_rate /= max_time
     return arrival_rate
+
+def get_mean_walltime_in_queue(queue, normalized):
+    walltime_in_queue = [job.walltime for job in queue]
+    walltime_in_queue = np.asarray(walltime_in_queue)
+    if len(walltime_in_queue) == 0:
+        return 0
+    mean_walltime = np.mean(walltime_in_queue)
+    if normalized:
+        mean_walltime /= np.max(walltime_in_queue)
+    return mean_walltime
+
+def get_mean_waittime_queue(queue, current_time, normalized):
+    subtimes = [job.subtime for job in queue]
+    if len(subtimes)==0:
+        return 0
+    
+    subtimes = np.asarray(subtimes)
+    wait_times = current_time-subtimes
+    mean_wait_times = np.mean(wait_times)
+    if normalized:
+        mean_wait_times /= np.max(wait_times)
+    return mean_wait_times
+
+def get_wasted_energy(energy_mon, host_mon, normalized):
+    wasted_energy = host_mon.info["energy_waste"]
+    if normalized:
+        all_energy = energy_mon.info["energy"]
+        total_energy = np.sum(np.asarray(all_energy))
+        wasted_energy = wasted_energy/total_energy
+    return wasted_energy
+
+
+# we are here now
+def get_mean_runtime_nodes(hosts, normalized):
+    runtimes = []
+    for h in hosts:
+        if h.is_computing:
+            job_id = h.jobs
+            print(h.jobs)
+        
