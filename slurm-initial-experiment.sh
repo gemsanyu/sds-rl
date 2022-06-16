@@ -10,7 +10,7 @@
 nix-user-chroot ~/.nix bash
 nix-shell ~/sds-rl/env.nix
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate ttp
+conda activate sds-rl
 
 cd ~/sds-rl/sds-rl
 
