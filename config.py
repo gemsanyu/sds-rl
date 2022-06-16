@@ -37,6 +37,10 @@ def define_args_parser():
                         type=int,
                         default=3600,
                         help='timeout for timeout shutdown policy')
+    parser.add_argument('--is-baseline',
+                        type=bool,
+                        default=False,
+                        help='if baseline dont use any policy')
 
 
     return parser

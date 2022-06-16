@@ -12,9 +12,10 @@ from timeout_policy import TimeoutPolicy
 from config import define_args_parser
 
 
-def run_simulation(shutdown_policy, workload_filename, platform_path):
+def run_simulation(shutdown_policy, workload_filename, platform_path, is_baseline):
     simulator = SimulatorHandler()
-    policy = shutdown_policy(simulator)
+    if not is_baseline:
+        policy = shutdown_policy(simulator)
     scheduler = EASYScheduler(simulator)
 
     # 1) Instantiate monitors to collect simulation statistics
@@ -62,7 +63,7 @@ if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])
     to_policy = lambda s: TimeoutPolicy(args.timeout, s)
     start = time()
-    sim_mon, host_mon, e_mon, simulator = run_simulation(to_policy, args.workload_path, args.platform_path) # Simulation 1: Timeout (30 minute) Dataset (Gaia)
+    sim_mon, host_mon, e_mon, simulator = run_simulation(to_policy, args.workload_path, args.platform_path, args.is_baseline) # Simulation 1: Timeout (30 minute) Dataset (Gaia)
     end = time()
     walltime = end-start
     header = ['dataset', 'timeout', 'f(1,0)=slowdown', 'f(0,1)=energy', 'f(0.5,0.5)=balance', "experiment walltime"]
@@ -71,9 +72,9 @@ if __name__ == "__main__":
     row = []
     row.append(args.workload_path)
     row.append(args.timeout)
-    row.append(compute_score(sim_mon, simulator, 1, 0))
-    row.append(compute_score(sim_mon, simulator, 0, 1))
-    row.append(compute_score(sim_mon, simulator, 0.5, 0.5))
+    row.append(compute_score(sim_mon, simulator, 1, 0, is_normalized=False))
+    row.append(compute_score(sim_mon, simulator, 0, 1, is_normalized=False))
+    row.append(compute_score(sim_mon, simulator, 0.5, 0.5, is_normalized=False))
     row.append(walltime)
     data.append(row)
 
