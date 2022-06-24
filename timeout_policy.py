@@ -19,8 +19,6 @@ class TimeoutPolicy:
 
     def on_host_state_changed(self, h: Host) -> None:
         host_really_idle = h.is_idle and not h.is_allocated
-        if h.is_idle and h.is_allocated:
-            print("A HOST IS IDLE BUT ALLOCATED?")
         if host_really_idle and (not h.id in self.hosts_idle):
             self.hosts_idle[h.id] = self.simulator.current_time
             self.setup_callback()
@@ -33,9 +31,7 @@ class TimeoutPolicy:
 
     def callback(self, current_time: float) -> None:
         for host_id, t_idle_start in list(self.hosts_idle.items()):
-            if  current_time - t_idle_start >= self.t_timeout:
-                try:
-                    self.simulator.switch_off([host_id])
-                except RuntimeError:
-                    host = self.simulator.platform.get_host(host_id)
-                    print("host is :", host)
+            h = self.simulator.platform.get_host(host_id)
+            host_really_idle = h.is_idle and not h.is_allocated        
+            if  current_time - t_idle_start >= self.t_timeout and host_really_idle:
+                self.simulator.switch_off([host_id])

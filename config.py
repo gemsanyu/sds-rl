@@ -27,7 +27,7 @@ def define_args_parser():
                         help="experiment title savefiles' name")
     parser.add_argument('--workload-path',
                         type=str,
-                        default="workloads-gaia.json",
+                        default="workloads-nasa-cleaned-8host.json",
                         help="workload path (job requests' details")
     parser.add_argument('--platform-path',
                         type=str,

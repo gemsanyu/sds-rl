@@ -6,13 +6,14 @@ from time import time
 from batsim_py import SimulatorHandler
 from batsim_py import SimulatorHandler
 from batsim_py.monitors import SimulationMonitor, HostMonitor, ConsumedEnergyMonitor, JobMonitor
+from timeout_policy import TimeoutPolicy
 
 from easy_backfilling import EASYScheduler
 from rl_policy import RLPolicy
 from config import define_args_parser
 
 
-def run_simulation(shutdown_policy, workload_filename, platform_path):
+def run_simulation(rl_policy, workload_filename, platform_path):
     simulator = SimulatorHandler()
     scheduler = EASYScheduler(simulator)
 
@@ -21,7 +22,9 @@ def run_simulation(shutdown_policy, workload_filename, platform_path):
     host_mon = HostMonitor(simulator)
     e_mon = ConsumedEnergyMonitor(simulator)
     job_mon = JobMonitor(simulator)
-
+    to_policy = lambda s: TimeoutPolicy(300, s)
+    to_policy(simulator)
+    
     policy = RLPolicy(None, 500, sim_mon, e_mon, host_mon, job_mon, simulator)
     
 
