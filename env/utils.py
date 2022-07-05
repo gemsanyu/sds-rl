@@ -15,6 +15,8 @@ def get_feasible_mask(hosts: list[Host]):
 
     # can it be switched off
     is_really_idle = np.logical_and(is_idle, np.logical_not(is_allocated))
+    # print(np.logical_and(is_idle, is_sleeping))
+    # print(is_sleeping)
     feasible_mask[:, 1] = np.logical_and(np.logical_not(is_switching), is_really_idle)
     # can it be switched on
     feasible_mask[:, 2] = np.logical_and(np.logical_not(is_switching), is_sleeping)
@@ -60,10 +62,14 @@ def get_mean_waittime_queue(queue, current_time, is_normalized):
 
 def get_wasted_energy(energy_mon, host_mon, is_normalized):
     wasted_energy = host_mon.info["energy_waste"]
-    all_energy = energy_mon.info["energy"]
-    total_energy = np.sum(np.asarray(all_energy, dtype=np.float32))
-    if is_normalized and total_energy:
-        wasted_energy = wasted_energy/total_energy
+    all_energy = host_mon.info["consumed_joules"]
+    # print(wasted_energy)
+    # print(all_energy)
+    # total_energy = np.sum(np.asarray(all_energy, dtype=np.float32))
+    # print(total_energy)
+    if is_normalized and all_energy>0:
+        wasted_energy = wasted_energy/all_energy
+        # wasted_energy[np.isnan(wasted_energy)] = 0
     return wasted_energy
 
 def get_host_on_off(platform):

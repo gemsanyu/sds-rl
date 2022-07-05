@@ -17,6 +17,7 @@ from batsim_py.events import JobEvent
 from env.easy_backfilling import EASYScheduler
 from env.utils import *
 
+#NO_OP = 0
 SWITCH_OFF = 1
 SWITCH_ON = 2
 
@@ -80,14 +81,21 @@ class SDS_ENV(Env):
         self.host_monitor.update_info_all()
         
         features = self.get_features(self.simulator.current_time)
+        # features = np.expand_dims(features, 0)
         mask = get_feasible_mask(list(self.simulator.platform.hosts))
-        return features, mask
+        # mask = np.expand_dims(mask, 0)
+        return features
+
+    def get_mask(self):
+        return get_feasible_mask(list(self.simulator.platform.hosts))
 # return features, mask
 
     # return next features, reward, and done flag, and empty [](this is info)
-    def step(self, actions_and_dt):
-        actions, dt = actions_and_dt
+    # def step(self, actions_and_dt):
+    def step(self, actions):
+        # actions, dt = actions_and_dt
         self.apply(actions)
+        dt = 600
         # proceed time, and schedule
         # get next features
         if self.simulator.is_running:
@@ -98,6 +106,7 @@ class SDS_ENV(Env):
             self.simulator.close()
             self.reset()
             done=True
+        self.host_monitor.update_info_all()
         current_time = self.simulator.current_time
         features = self.get_features(current_time)
         rewards = self.get_rewards(current_time, dt)
@@ -107,10 +116,11 @@ class SDS_ENV(Env):
     def apply(self, actions):
         hosts_id_to_switch_off = np.nonzero((actions == SWITCH_OFF)).squeeze(1).tolist()
         hosts_id_to_switch_on = np.nonzero((actions == SWITCH_ON)).squeeze(1).tolist()
+        # print(hosts_id_to_switch_off)
         if len(hosts_id_to_switch_off) > 0:
             self.simulator.switch_off(hosts_id_to_switch_off)
         if len(hosts_id_to_switch_on) > 0:
-            self.simulator.switch_off(hosts_id_to_switch_on)
+            self.simulator.switch_on(hosts_id_to_switch_on)
 
     def get_rewards(self, current_time, dt):
         wasted_energy = self.host_monitor.info["energy_waste"] 
@@ -123,7 +133,6 @@ class SDS_ENV(Env):
         waiting_time_since_last_dt = 0.
         n_job_waitting = 0
         for job in self.job_infos.values():
-            print(job)
             if job.start_time is not None and (job.start_time < current_time-dt):
                 continue
             n_job_waitting += 1
