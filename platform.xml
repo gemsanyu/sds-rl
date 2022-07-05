@@ -19,6 +19,16 @@
         untuk on ke off, untuk off ke on karena di sini idle ke active similar consumption rate, diasumsikan
         switching off ke on = state idle 
 
+        buatin workloads (hasil potongan dari workload lain), dengan n_jobs = N_JOBS=1000
+        disimpen di data/training/workload_1.json....workload_N.json
+
+        epoch n_proc:
+            get random batch from data/training
+            run parallel simulation to populate ER
+            wait all simulation ends
+            update()
+            
+
         similar to [2], here we set the consumption rate for the state 
         
         typically very low, here it assumed that the power consumption rate in the sleep state is around 5%

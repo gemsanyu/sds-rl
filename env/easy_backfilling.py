@@ -1,5 +1,4 @@
-from fcfs import FCFSScheduler
-from batsim_py.simulator import SimulatorHandler
+from env.fcfs import FCFSScheduler
 
 class EASYScheduler(FCFSScheduler):
   def __str__(self) -> str:

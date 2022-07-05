@@ -74,15 +74,15 @@ class RLPolicy:
         hosts = list(self.simulator.platform.hosts)
         feasible_mask = get_feasible_mask(hosts)
         has_possible_action = feasible_mask.sum(dim=1) > 0
-        print(self.simulator.platform.state)
-        print(feasible_mask)
+        # print(self.simulator.platform.state)
+        # print(feasible_mask)
         # 2. generate probability (agent(simulator_features, node_features))
         # probs = agent(simulator_features, node_features)
         probs = T.rand(size=feasible_mask.shape)*feasible_mask # dari 0->1 jika feasible, 0 jika enggak, ini dummy
-        print(probs)
+        # print(probs)
         # 3. select feasible action
         actions, logprobs = self.select(probs[has_possible_action, :])
-        print(actions)
+        # print(actions)
         # 4. set node to sleep or active
         node_with_possible_action = has_possible_action.nonzero()
         for idx, action in enumerate(actions):
