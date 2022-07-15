@@ -6,119 +6,106 @@ import gym
 import torch as T
 import numpy as np
 
-from agent.agent import Agent
 from env.sds_env import SDS_ENV
-from config import define_args_parser
+from config import get_args
+
+from utils import select
+from setup import setup
 
 
-def select(probs, is_training=True):
-    '''
-    ### Select next to be executed.
-    -----
-    Parameter:
-        probs: probabilities of each operation
+def learn(args, agent, agent_opt, critic, critic_opt, memory):
+    for _ in range(args.n_learning_epochs):
+        state_arr, mask_arr, action_arr, old_prob_arr, vals_arr,\
+        reward_arr, dones_arr, batches = memory.generate_batches()
 
-    Return: index of operations, log of probabilities
-    '''
-    if is_training:
-        dist = T.distributions.Categorical(probs)
-        op = dist.sample()
-        logprob = dist.log_prob(op)
-    else:
-        prob, op = T.max(probs, dim=1)
-        logprob = T.log(prob)
-    return op, logprob
+        values = vals_arr
+        advantage = np.zeros(len(reward_arr), dtype=np.float32)
+
+        for t in range(len(reward_arr)-1):
+            discount = 1
+            a_t = 0
+            for k in range(t, len(reward_arr)-1):
+                a_t += discount*(reward_arr[k] + args.gamma*values[k+1]*\
+                        (1-int(dones_arr[k])) - values[k])
+                discount *= args.gamma*args.gae_lambda
+            advantage[t] = a_t
+        advantage = T.tensor(advantage)
+        values = T.tensor(values)
+        for batch in batches:
+            states = T.tensor(state_arr[batch], dtype=T.float)
+            masks = T.tensor(mask_arr[batch], dtype=T.float)
+            old_probs = T.tensor(old_prob_arr[batch])
+            actions = T.tensor(action_arr[batch])
+
+            dist, _ = agent(states, masks)
+            critic_value = critic(states)
+
+            critic_value = T.squeeze(critic_value)
+            new_probs = T.gather(input=dist, dim=2, index=actions.unsqueeze(2)).squeeze(2)
+            new_action_valid = T.gather(input=masks, dim=2, index=actions.unsqueeze(2)).squeeze(2)
+            print(T.count_nonzero(new_action_valid))
+            # print(T.count_nonzero(new_probs))
+            new_probs = new_probs.log().sum(dim=1)
+            # print(new_probs)
+            # print(old_probs)
+            # new_probs = dist.log_prob(actions), dist[actions]
+            # ubah ke gather
+
+            prob_ratio = (new_probs - old_probs).exp()
+            #prob_ratio = (new_probs - old_probs).exp()
+            weighted_probs = advantage[batch] * prob_ratio
+            weighted_clipped_probs = T.clamp(prob_ratio, 1-args.ppo_clip,
+                    1+args.ppo_clip)*advantage[batch]
+            actor_loss = -T.min(weighted_probs, weighted_clipped_probs).mean()
+        
+            agent_opt.zero_grad()
+            actor_loss.backward()
+            T.nn.utils.clip_grad_norm_(agent.parameters(), max_norm=args.grad_norm)
+            agent_opt.step()
+
+            returns = advantage[batch] + values[batch]
+            critic_loss = (returns-critic_value)**2
+            critic_loss = critic_loss.mean()
+            critic_opt.zero_grad()
+            critic_loss.backward()
+            T.nn.utils.clip_grad_norm_(agent.parameters(), max_norm=args.grad_norm)
+            critic_opt.step()
 
 if __name__ == "__main__":
-    
-    parser = define_args_parser()
-    args = parser.parse_args(sys.argv[1:])
-    agent = Agent(n_heads=8,
-                 n_gae_layers=3,
-                 input_dim=11,
-                #  embed_dim=128,
-                 embed_dim=64,
-                #  gae_ff_hidden=512,
-                 gae_ff_hidden=128,
-                 tanh_clip=10)    
-    agent_opt = T.optim.AdamW(agent.parameters(), lr=1e-4)
-    # to_policy = lambda s: TimeoutPolicy(args.timeout, s)
-    # dataset-8-1.json
-    # dataset-128-1.json
-    # dataset_root = "dataset"
-    # dataset_dir = pathlib.Path(".")/dataset_root
-    # dataset_dir.mkdir(parents=True, exist_ok=True)
-
-    # dataset_name_list = ["dataset-"+num_host+"-"+idx+".json" for num_host in [8,128] for idx in range(193)+1]
-    # env = SDS_ENV(workload_filename=args.workload_path, platform_path=args.platform_path)
-    # features = env.reset()
-    # print(env.get_mask())
-    # vec_env = gym.vector.SyncVectorEnv([lambda: SDS_ENV(workload_filename=args.workload_path, platform_path=args.platform_path) for _ in range(8)])
-    # features = vec_env.reset()
-    # print(features.shape)
-    # mask = vec_env.get_mask()
-    # print(mask.shape)
-
-    max_epoch = 10
-    num_envs = 8
-    max_num_steps = 64
-    for epoch in range(args.max_epoch):
-        mask = np.ones((num_envs, 8, 3))
-        mask[:,:,2] = 0
-        vec_env = gym.vector.SyncVectorEnv([lambda: SDS_ENV(workload_filename=args.workload_path, platform_path=args.platform_path) for _ in range(8)])
-        features = vec_env.reset()
-        sum_logprobs = T.zeros((num_envs,), dtype=T.float32) 
-        sum_rewards = T.zeros((num_envs,), dtype=T.float32)
-        for step in range(max_num_steps):
+    args = get_args()
+    agent, critic, agent_opt, critic_opt, memory, env, last_step, checkpoint_path = setup(args)
+    # start training
+    mask = np.ones((args.num_envs, 128, 3))
+    mask[:,:,2] = 0
+    features = env.reset()
+    for step in range(last_step, args.max_steps):
+        print(step)
+        with T.no_grad():
             features_ = T.from_numpy(features).float()
             mask_ = T.from_numpy(mask).float()
             probs, entropy = agent(features_, mask_)
-            # probs = T.rand(size=mask.shape)*mask
             actions, logprobs = select(probs)
-            # print(mask)
-            # print(probs)
-            # print(actions)
+            new_features, rewards, done, new_mask = env.step(actions)
+            critic_vals = critic(features_)
+            memory.store_memory(features, mask, actions, logprobs, critic_vals, rewards, done)
             
-            # print("-------------------------")
-            # print(actions, logprobs)
-            features, rewards, done, mask = vec_env.step(actions)
-            
+            features = new_features
             features = np.concatenate(features)
-            features = features.reshape(num_envs, -1, 11)
-            # print(features.shape)
-            rewards = np.asanyarray(rewards)
-            rewards = rewards.reshape(num_envs,)
-            sum_logprobs = sum_logprobs + logprobs.sum(dim=1)
-            sum_rewards = sum_rewards + rewards
-            done = np.asanyarray(done)
+            features = features.reshape(args.num_envs, -1, 11)
+            mask = new_mask
             mask = np.asanyarray(mask)
-            mask = mask.reshape(num_envs, -1, 3)
-            # print(mask.shape)
-            # print(features)
-            # print(rewards)
-            # print(done)
-            # print(mask)
-            # break
-        print("EPOCH", epoch,":",sum_rewards.mean(), flush=True)
-        critic_score = sum_rewards.mean()
-        advantage = (sum_rewards-critic_score) # adv positive if rewards > mean_rewards, else negative
-        loss = (sum_rewards*sum_logprobs).mean()
-        loss = -loss
+            mask = mask.reshape(args.num_envs, -1, 3)
+        
+        if step > 0 and step % args.training_steps == 0:
+            learn(args, agent, agent_opt, critic, critic_opt, memory)
+            memory.clear_memory()
 
-        agent_opt.zero_grad()
-        loss.backward()
-        agent_opt.step()
+        # critic_score = sum_rewards.mean()
+        # advantage = (sum_rewards-critic_score) # adv positive if rewards > mean_rewards, else negative
+        # loss = (sum_rewards*sum_logprobs).mean()
+        # loss = -loss
 
+        # agent_opt.zero_grad()
+        # loss.backward()
+        # agent_opt.step()
 
-    # for epoch
-    #     # prepare environments: select worklod vs platform path randomly
-
-    #     for num_steps
-    #         interact
-    #     learn
-    # features, mask = env.reset()
-    # mask = T.from_numpy(mask)
-    # probs = T.rand(size=mask.shape)*mask # dari 0->1 jika feasible, 0 jika enggak, ini dummy
-    # actions, logprobs = select(probs)
-    # state = env.step((actions, 2))
-    

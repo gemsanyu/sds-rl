@@ -1,4 +1,5 @@
 import csv
+from random import randint
 import sys
 import pathlib
 from this import s
@@ -17,16 +18,19 @@ from batsim_py.events import JobEvent
 from env.easy_backfilling import EASYScheduler
 from env.utils import *
 
-#NO_OP = 0
+NO_OP = 0
 SWITCH_OFF = 1
 SWITCH_ON = 2
 
+
 class SDS_ENV(Env):
-    def __init__(self, workload_filename, platform_path, batsim_verbosity="quiet", alpha=0.5, beta=0.5) -> None:
+    def __init__(self, num_datasets, batsim_verbosity="quiet", alpha=0.5, beta=0.5) -> None:
         super(SDS_ENV, self).__init__()
-        self.workload_filename = workload_filename
         self.batsim_verbosity = batsim_verbosity
-        self.platform_path = platform_path
+        self.platform_path = pathlib.Path(".")/"platform"/"platform-128.xml"
+        self.dataset_dir = pathlib.Path(".")/"dataset"
+        dummy_dataset_path = self.dataset_dir/"dataset-0.json"
+        self.num_datasets = num_datasets
         self.alpha = alpha
         self.beta = beta
         self.simulator = SimulatorHandler()
@@ -43,7 +47,7 @@ class SDS_ENV(Env):
         self.simulator.subscribe(JobEvent.SUBMITTED, self.add_to_job_infos)
         self.previous_wasted_energy = None    
 
-        self.simulator.start(platform=platform_path, workload=workload_filename, verbosity=self.batsim_verbosity)
+        self.simulator.start(platform=self.platform_path.absolute(), workload=dummy_dataset_path.absolute(), verbosity=self.batsim_verbosity)
         self.n_host = len(list(self.simulator.platform.hosts))
         self.hosts = list(self.simulator.platform.hosts)
         self.observation_shape = (self.n_host, self.num_sim_features+self.num_node_features)
@@ -77,7 +81,10 @@ class SDS_ENV(Env):
         self.simulator.subscribe(JobEvent.SUBMITTED, self.add_to_job_infos)
         self.previous_wasted_energy = None
 
-        self.simulator.start(platform=self.platform_path, workload=self.workload_filename, verbosity=self.batsim_verbosity)
+        dataset_idx = randint(0, self.num_datasets-1)
+        dataset_filename = "dataset-"+str(dataset_idx)+".json"
+        dataset_filepath = self.dataset_dir/dataset_filename
+        self.simulator.start(platform=self.platform_path, workload=dataset_filepath.absolute(), verbosity=self.batsim_verbosity)
         self.host_monitor.update_info_all()
         
         features = self.get_features(self.simulator.current_time)

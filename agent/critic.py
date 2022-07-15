@@ -1,4 +1,3 @@
-import math
 import torch as T
 import torch.nn as nn
 
@@ -6,7 +5,7 @@ from agent.graph_encoder import GraphAttentionEncoder
 
 CPU_DEVICE = T.device("cpu")
 
-class Agent(nn.Module):
+class Critic(nn.Module):
     def __init__(self,
             n_heads: int = 8,
             n_gae_layers: int = 3,
@@ -15,7 +14,7 @@ class Agent(nn.Module):
             gae_ff_hidden: int = 512,
             tanh_clip: float = 10,
             device=CPU_DEVICE):
-        super(Agent, self).__init__()
+        super(Critic, self).__init__()
         self.n_heads = n_heads
         self.n_gae_layers = n_gae_layers
         self.input_dim = input_dim
@@ -29,25 +28,22 @@ class Agent(nn.Module):
                                          embed_dim=embed_dim,
                                          node_dim=input_dim,
                                          feed_forward_hidden=gae_ff_hidden)
-        v = T.zeros((1, embed_dim, 3), dtype=T.float32)
-        self.v = nn.Parameter(v)
-        stdv = 1./math.sqrt(embed_dim)
-        self.v.data.uniform_(-stdv, stdv)
+        self.value_layers = nn.Sequential(nn.Linear(embed_dim, 20),
+                                          nn.ReLU(),
+                                          nn.Linear(20,20),
+                                          nn.ReLU(),
+                                          nn.Linear(20,1)) 
         self.to(device)
 
 
-    def forward(self, features, mask):
-        batch_size, num_hosts, _ = features.shape
+    def forward(self, features:T.Tensor)->T.Tensor:
         embeddings, env_embeddings = self.gae(features)
-        v = self.v.expand(batch_size, self.embed_dim, 3)
-        # print("FEATURES")
-        # print(features)
-        #B,H,3
-        # 0-1, sum to 1 over 3 actions,,
-        # 0,1, log dari 1=0,, log dari 0 itu -inf,,, dan di libs e^-inf = 0
-        logits = T.bmm(embeddings, v)
-        logits = logits + mask.log()
-        probs = T.softmax(logits, dim=2)
-        entropy = -T.sum(probs*probs.log())
-        return probs, entropy
-        #B,H,embed_size @ embed_size,3 - > B,H,3
+        # rata-rata sebelum:
+        #     apakah mean  of embeddings = representative
+        #     less runtime
+        values = self.value_layers(env_embeddings).squeeze(1)
+        # rata-rata sesudah:
+        #     bisakah critic memprediksi sumbangsih tiap host terhadap state value?
+        # values = self.value_layers(embeddings).mean(dim=1)
+        # values = self.value_layers(env_embeddings)
+        return values
