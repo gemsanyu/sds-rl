@@ -24,12 +24,12 @@ SWITCH_ON = 2
 
 
 class SDS_ENV(Env):
-    def __init__(self, num_datasets, batsim_verbosity="quiet", alpha=0.5, beta=0.5) -> None:
+    def __init__(self, num_datasets=None, batsim_verbosity="quiet", alpha=0.5, beta=0.5, num_host=128, validation_workload_path=None) -> None:
         super(SDS_ENV, self).__init__()
         self.batsim_verbosity = batsim_verbosity
-        self.platform_path = pathlib.Path(".")/"platform"/"platform-128.xml"
-        self.dataset_dir = pathlib.Path(".")/"dataset"
-        dummy_dataset_path = self.dataset_dir/"dataset-0.json"
+        self.platform_path = pathlib.Path(".")/"platform"/("platform-"+str(num_host)+".xml")
+        self.dataset_dir = pathlib.Path(".")/"dataset"/"training"
+        self.validation_workload_path = validation_workload_path
         self.num_datasets = num_datasets
         self.alpha = alpha
         self.beta = beta
@@ -37,24 +37,11 @@ class SDS_ENV(Env):
         self.scheduler = EASYScheduler(self.simulator)
         self.num_sim_features = 5
         self.num_node_features = 6
-        # 1) Instantiate monitors to collect simulation statistics
-        self.simulation_monitor = SimulationMonitor(self.simulator)
-        self.host_monitor = HostMonitor(self.simulator)
-        self.energy_monitor = ConsumedEnergyMonitor(self.simulator)
-        self.job_monitor = JobMonitor(self.simulator)
-        # job infos dict, manually compile 
-        self.job_infos = {}
-        self.simulator.subscribe(JobEvent.SUBMITTED, self.add_to_job_infos)
-        self.previous_wasted_energy = None    
-
-        self.simulator.start(platform=self.platform_path.absolute(), workload=dummy_dataset_path.absolute(), verbosity=self.batsim_verbosity)
-        self.n_host = len(list(self.simulator.platform.hosts))
-        self.hosts = list(self.simulator.platform.hosts)
+        self.n_host = num_host
         self.observation_shape = (self.n_host, self.num_sim_features+self.num_node_features)
         self.observation_space = spaces.Box(low = np.zeros(self.observation_shape), 
                                             high = np.ones(self.observation_shape),
                                             dtype = np.float16)
-        self.simulator.subscribe(JobEvent.SUBMITTED, self.add_to_job_infos)
         # Define an action space for each host, ranging from 0 to 3
         # 0. No Action
         # 1. Turn OFF
@@ -81,10 +68,14 @@ class SDS_ENV(Env):
         self.simulator.subscribe(JobEvent.SUBMITTED, self.add_to_job_infos)
         self.previous_wasted_energy = None
 
-        dataset_idx = randint(0, self.num_datasets-1)
-        dataset_filename = "dataset-"+str(dataset_idx)+".json"
-        dataset_filepath = self.dataset_dir/dataset_filename
+        if self.validation_workload_path is not None:
+            dataset_filepath = self.validation_workload_path
+        else:
+            dataset_idx = randint(0, self.num_datasets-1)
+            dataset_filename = "dataset-"+str(dataset_idx)+".json"
+            dataset_filepath = self.dataset_dir/dataset_filename
         self.simulator.start(platform=self.platform_path, workload=dataset_filepath.absolute(), verbosity=self.batsim_verbosity)
+        self.hosts = list(self.simulator.platform.hosts)
         self.host_monitor.update_info_all()
         
         features = self.get_features(self.simulator.current_time)
@@ -111,7 +102,8 @@ class SDS_ENV(Env):
             done = False
         else:
             self.simulator.close()
-            self.reset()
+            if not self.is_validation:
+                self.reset()
             done=True
         self.host_monitor.update_info_all()
         current_time = self.simulator.current_time

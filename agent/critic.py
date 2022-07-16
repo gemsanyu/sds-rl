@@ -5,7 +5,8 @@ from agent.graph_encoder import GraphAttentionEncoder
 
 CPU_DEVICE = T.device("cpu")
 
-class Critic(nn.Module):
+# class Critic(nn.Module):
+class Critic(T.jit.ScriptModule):
     def __init__(self,
             n_heads: int = 8,
             n_gae_layers: int = 3,
@@ -35,7 +36,7 @@ class Critic(nn.Module):
                                           nn.Linear(20,1)) 
         self.to(device)
 
-
+    @T.jit.script_method
     def forward(self, features:T.Tensor)->T.Tensor:
         embeddings, env_embeddings = self.gae(features)
         # rata-rata sebelum:

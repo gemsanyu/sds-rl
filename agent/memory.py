@@ -47,6 +47,7 @@ class PPOMemory:
 
     def clear_memory(self):
         self.states = []
+        self.masks = []
         self.probs = []
         self.actions = []
         self.rewards = []

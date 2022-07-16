@@ -8,6 +8,10 @@ def define_args_parser():
     )
 
     # Agent Model
+    parser.add_argument('--device',
+                        type=str,
+                        default="cpu",
+                        help='device where to run agent (cpu or cuda)')
     parser.add_argument('--n-heads',
                         type=int,
                         default=8,
@@ -83,11 +87,11 @@ def define_args_parser():
     # Simulation
     parser.add_argument('--title',
                         type=str,
-                        default="mpn",
+                        default="self-attention-v1",
                         help="experiment title savefiles' name")
-    parser.add_argument('--workload-path',
+    parser.add_argument('--validation-workload-name',
                         type=str,
-                        default="workloads-nasa-cleaned-8host.json",
+                        default="workloads-nasa-cleaned-128host.json",
                         help="workload path (job requests' details")
     parser.add_argument('--platform-path',
                         type=str,
