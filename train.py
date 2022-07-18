@@ -11,6 +11,7 @@ from utils import select
 from setup import setup
 from validation import validate
 
+NUM_DATASETS = 1000
 
 def learn(args, agent, agent_opt, critic, critic_opt, memory):
     agent.train()
@@ -21,14 +22,14 @@ def learn(args, agent, agent_opt, critic, critic_opt, memory):
         values = vals_arr
         advantage = np.zeros(len(reward_arr), dtype=np.float32)
 
-        for t in range(len(reward_arr)-1):
-            discount = 1
-            a_t = 0
-            for k in range(t, len(reward_arr)-1):
-                a_t += discount*(reward_arr[k] + args.gamma*values[k+1]*\
-                        (1-int(dones_arr[k])) - values[k])
-                discount *= args.gamma*args.gae_lambda
-            advantage[t] = a_t
+
+        # diubah agar tidak nested loop
+        # perhitungan GAE generalized advantage estimation
+        advantage = [0 for _ in range(len(reward_arr))]
+        for t in reversed(range(len(reward_arr)-1)):
+            delta = reward_arr[t] + (args.gamma * values[t+1] * (1-int(dones_arr[t]))) - values[t]
+            advantage[t] = delta + (args.gamma * args.gae_lambda * advantage[t + 1] * (1-int(dones_arr[t])))
+
         advantage = T.tensor(advantage, device=agent.device)
         values = T.tensor(values, device=agent.device)
         
@@ -84,23 +85,17 @@ def learn(args, agent, agent_opt, critic, critic_opt, memory):
 
 if __name__ == "__main__":
     args = get_args()
-    agent, critic, agent_opt, critic_opt, memory, env, last_step, best_validation_value, checkpoint_path, validation_env, writer = setup(args)
-    validate(args, 
-            agent.state_dict(),
-            agent_opt.state_dict(), 
-            critic.state_dict(), 
-            critic_opt.state_dict(), 
-            best_validation_value, 
-            checkpoint_path,
-            last_step,
-            validation_env,
-            writer,
-            parallel=False)
-    exit()
+    agent, critic, agent_opt, critic_opt, memory, last_epoch, best_validation_value, checkpoint_path, writer = setup(args)
+
+    # 1. edit enviromentnya
+    # 2. edit setup dan save checkpoint untuk save epoch
+    # 3. lanjut siapin validasi
+    # 4. remove nested loop gae
     # start training
     step = 0
     for epoch in range(last_epoch, args.max_epoch):
-        dataset_idxs = [randint(0,num_datasets) for _ in range(args.num_envs+2)]
+        print("EPOCH", epoch)
+        dataset_idxs = [randint(0,NUM_DATASETS) for _ in range(args.num_envs+args.num_validation_envs)]
 
         # 8 train, 2 validasi
         training_idxs = dataset_idxs[:args.num_envs]
@@ -109,7 +104,7 @@ if __name__ == "__main__":
         # pisah dataset training validation
         # init training environment
         env_fns = [lambda: SDS_ENV(dataset_idx=train_idx) for train_idx in training_idxs]
-        training_env = gym.vector.AsyncVectorEnv(env_fns, shared_memory=False)
+        env = gym.vector.AsyncVectorEnv(env_fns, shared_memory=False)
     
         val_env_fns = [lambda: SDS_ENV(dataset_idx=val_idx) for val_idx in validation_idxs]
         validation_env = gym.vector.AsyncVectorEnv(val_env_fns, shared_memory=False)
@@ -117,15 +112,16 @@ if __name__ == "__main__":
         # mulai generate experience dari training environments
         mask = np.ones((args.num_envs, 128, 3))
         mask[:,:,2] = 0
-        features = training_env.reset()        
+        features = env.reset()        
         for it in range(args.max_training_steps):
+            print("---training step", it)
+            # rollout / solve env/ run episode -> gather experiences..
             with T.no_grad():
                 agent.eval()
                 features_ = T.from_numpy(features).to(agent.device).float()
                 mask_ = T.from_numpy(mask).to(agent.device).float()
                 probs, entropy = agent(features_, mask_)
                 actions, logprobs = select(probs)
-                legitimate = T.gather(mask_, 2, actions.unsqueeze(2))
                 new_features, rewards, done, new_mask = env.step(actions)
                 critic_vals = critic(features_)
                 memory.store_memory(features, mask, actions, logprobs, critic_vals, rewards, done)
@@ -135,33 +131,19 @@ if __name__ == "__main__":
                 mask = new_mask
                 mask = np.asanyarray(mask)
                 mask = mask.reshape(args.num_envs, -1, 3)
-        
-        if step > 0 and step % args.training_steps == 0:
-            learn(args, agent, agent_opt, critic, critic_opt, memory)
-            memory.clear_memory()
-            validate()
-        step+=1
 
-        # validasi,, untuk liat growth/improvement, simpen terbaik based on validation, early stopping
-        # improvement dari objective function? / rewards?
-        # consumed joules, mean slowdown time
-        # kita belum liat seberapa berbeda kedua nilai di atas antar dataset (?)
-        #     sudah weighted dan normalized per dataset
-        #     tapi tiap dataset itu sama di jumlah jobs, bukan sama di 
-        #         1. time range -> max_consumed_joules -> digunakan untuk normalized
-        #             akan beda bangetkah scale dari objecive dari dataset dengan 
-        #                 time range kecil vs time range besar
-        # kalau rewards mungkin lebih 
-
-        # training_dataset = 1000
-        # per epoch ambil 100
-        #     10 kali
-        #         90 trainig, 10 validasi
-
-        
-        # dari 1000
-        # ambil 10, 8 traning 2 validasi
-
-        
-        # yang kita rencana lakukan seperti ini:
-        #     1 data doang, dipake validasi terus menerus 
+            if step > 0 and step % args.training_steps == 0:
+                learn(args, agent, agent_opt, critic, critic_opt, memory)
+                memory.clear_memory()
+                best_validation_value = validate(args, 
+                        agent.state_dict(),
+                        agent_opt.state_dict(), 
+                        critic.state_dict(), 
+                        critic_opt.state_dict(), 
+                        best_validation_value, 
+                        checkpoint_path,
+                        last_epoch,
+                        validation_env,
+                        writer,
+                        parallel=False)
+            step+=1

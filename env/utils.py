@@ -1,5 +1,8 @@
-import numpy as np
+from batsim_py import SimulatorHandler
+from batsim_py.monitors import SimulationMonitor
 from batsim_py.resources import Host, HostState
+import numpy as np
+
 
 def get_feasible_mask(hosts: list[Host]):
     #fm[:, 0] = dibiarkan, dummy
@@ -120,3 +123,21 @@ def get_switching_time(host_monitor, is_normalized=False, current_time=1):
             switching_time[0][int(id)] /= current_time
     switching_time = np.asarray(switching_time)
     return switching_time    
+
+
+def compute_objective(sim_mon:SimulationMonitor, sim_handler:SimulatorHandler, alpha=0.5, beta=0.5, is_normalized=True):
+  platform = sim_handler.platform
+  hosts = platform.hosts
+  total_max_watt_per_min = 0
+  for host in hosts:
+    max_watt_per_min = 0
+    for pstate in host.pstates:
+      max_watt_per_min = max(max_watt_per_min, pstate.watt_full)
+    total_max_watt_per_min += max_watt_per_min
+
+  total_time = sim_handler.current_time
+  max_consumed_joules = total_time*total_max_watt_per_min
+  consumed_joules = sim_mon.info["consumed_joules"]
+  mean_slowdown = sim_mon.info["mean_slowdown"]
+  score = F(mean_slowdown, consumed_joules, max_consumed_joules, alpha, beta, is_normalized)
+  return consumed_joules, mean_slowdown, score

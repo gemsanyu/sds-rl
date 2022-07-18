@@ -34,7 +34,7 @@ def setup(args):
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     checkpoint_path = checkpoint_dir/"checkpoint.pt"
 
-    last_step = 0
+    last_epoch = 0
     best_validation_value = None
     if os.path.isfile(checkpoint_path.absolute()):
         checkpoint = T.load(checkpoint_path.absolute(), map_location=agent.device)
@@ -42,7 +42,7 @@ def setup(args):
         agent_opt_state_dict = checkpoint["agent_opt_state_dict"]
         critic_state_dict = checkpoint["critic_state_dict"]
         critic_opt_state_dict = checkpoint["critic_opt_state_dict"]
-        last_step = checkpoint["last_step"]
+        last_epoch = checkpoint["last_epoch"]
         best_validation_value = checkpoint["best_val_value"]
         agent.load_state_dict(agent_state_dict)
         agent_opt.load_state_dict(agent_opt_state_dict)
@@ -51,13 +51,13 @@ def setup(args):
     memory = PPOMemory(args.mini_batch_size)
 
 
-    # training env
-    env_fns = [lambda: SDS_ENV(args.dataset_size) for _ in range(args.num_envs)]
-    training_env = gym.vector.AsyncVectorEnv(env_fns, shared_memory=False)
-    # validation env
-    validation_dir = pathlib.Path(".")/"dataset"/"validation"
-    validation_path = validation_dir/args.validation_workload_name
-    validation_env = SDS_ENV(validation_workload_path=validation_path)
+    # # training env
+    # env_fns = [lambda: SDS_ENV(args.dataset_size) for _ in range(args.num_envs)]
+    # training_env = gym.vector.AsyncVectorEnv(env_fns, shared_memory=False)
+    # # validation env
+    # validation_dir = pathlib.Path(".")/"dataset"/"validation"
+    # validation_path = validation_dir/args.validation_workload_name
+    # validation_env = SDS_ENV(validation_workload_path=validation_path)
 
     summary_root = "runs"
     summary_dir = pathlib.Path(".")/summary_root
@@ -65,4 +65,4 @@ def setup(args):
     model_summary_dir.mkdir(parents=True, exist_ok=True)
     writer = SummaryWriter(log_dir=model_summary_dir.absolute())
 
-    return agent, critic, agent_opt, critic_opt, memory, training_env, last_step, best_validation_value, checkpoint_path, validation_env, writer 
+    return agent, critic, agent_opt, critic_opt, memory, last_epoch, best_validation_value, checkpoint_path, writer 

@@ -36,10 +36,14 @@ def define_args_parser():
 
 
     # Misc
-    parser.add_argument('--max-steps',
+    parser.add_argument('--max-epoch',
                         type=int,
-                        default=1000000,
-                        help='Maximum steps of environment.')
+                        default=30,
+                        help='Maximum training epoch.')
+    parser.add_argument('--max-training-steps',
+                        type=int,
+                        default=1000,
+                        help='Maximum steps of solving the same environment.')
     parser.add_argument('--mini-batch-size',
                         type=int,
                         default=16,
@@ -54,8 +58,12 @@ def define_args_parser():
                         help='num of available datasets.')
     parser.add_argument('--num-envs',
                         type=int,
-                        default=4,
+                        default=8,
                         help='num of simultaneuos environments running.')
+    parser.add_argument('--num-validation-envs',
+                        type=int,
+                        default=2,
+                        help='num of simultaneuos environments running for validation step.')
     parser.add_argument('--training-steps',
                         type=int,
                         default=64,

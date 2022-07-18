@@ -24,13 +24,21 @@ SWITCH_ON = 2
 
 
 class SDS_ENV(Env):
-    def __init__(self, num_datasets=None, batsim_verbosity="quiet", alpha=0.5, beta=0.5, num_host=128, validation_workload_path=None) -> None:
+    def __init__(self, 
+                 dataset_idx=None, 
+                 batsim_verbosity="quiet", 
+                 alpha=0.5, 
+                 beta=0.5, 
+                 num_host=128, 
+                 is_validation=False,
+                 validation_workload_path=None) -> None:
         super(SDS_ENV, self).__init__()
         self.batsim_verbosity = batsim_verbosity
+        self.dataset_idx = dataset_idx
+        self.is_validation = is_validation
         self.platform_path = pathlib.Path(".")/"platform"/("platform-"+str(num_host)+".xml")
         self.dataset_dir = pathlib.Path(".")/"dataset"/"training"
         self.validation_workload_path = validation_workload_path
-        self.num_datasets = num_datasets
         self.alpha = alpha
         self.beta = beta
         self.simulator = SimulatorHandler()
@@ -71,8 +79,7 @@ class SDS_ENV(Env):
         if self.validation_workload_path is not None:
             dataset_filepath = self.validation_workload_path
         else:
-            dataset_idx = randint(0, self.num_datasets-1)
-            dataset_filename = "dataset-"+str(dataset_idx)+".json"
+            dataset_filename = "dataset-"+str(self.dataset_idx)+".json"
             dataset_filepath = self.dataset_dir/dataset_filename
         self.simulator.start(platform=self.platform_path, workload=dataset_filepath.absolute(), verbosity=self.batsim_verbosity)
         self.hosts = list(self.simulator.platform.hosts)
@@ -96,19 +103,24 @@ class SDS_ENV(Env):
         dt = 600
         # proceed time, and schedule
         # get next features
+        rewards = None
         if self.simulator.is_running:
             self.scheduler.schedule()
             self.simulator.proceed_time(time=dt)  # proceed directly to the next event.
             done = False
         else:
+            # di sini jika done
             self.simulator.close()
-            if not self.is_validation:
-                self.reset()
+            if self.is_validation:
+                energy_usage, mean_slowdown_time, obj = compute_objective(self.simulation_monitor, self.simulator,alpha=self.alpha, beta=self.beta)
+                rewards = (energy_usage, mean_slowdown_time, obj)
+            self.reset()
             done=True
         self.host_monitor.update_info_all()
         current_time = self.simulator.current_time
         features = self.get_features(current_time)
-        rewards = self.get_rewards(current_time, dt)
+        if rewards is None:
+            rewards = self.get_rewards(current_time, dt) 
         mask = get_feasible_mask(list(self.simulator.platform.hosts))
         return features, rewards, done, mask
 
