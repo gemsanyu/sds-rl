@@ -92,8 +92,7 @@ def save_checkpoint(agent_state_dict,
                     agent_opt_state_dict, 
                     critic_state_dict,
                     critic_opt_state_dict, 
-                    best_validation_value,
-                    obj,
+                    epoch,
                     step,
                     checkpoint_path:pathlib.Path):
     checkpoint = {
@@ -101,17 +100,10 @@ def save_checkpoint(agent_state_dict,
                     "agent_opt_state_dict": agent_opt_state_dict,
                     "critic_state_dict": critic_state_dict,   
                     "critic_opt_state_dict":critic_opt_state_dict,
+                    "epoch":epoch,
                     "step":step
                 }
-    if best_validation_value is None or best_validation_value > obj:
-        best_validation_value = obj
-        checkpoint["best_val_value"] = best_validation_value
-        best_checkpoint_path = checkpoint_path.parent/(checkpoint_path.name+"_best")
-        T.save(checkpoint, best_checkpoint_path)
-    else:
-        checkpoint["best_val_value"] = best_validation_value
     T.save(checkpoint, checkpoint_path)
-    return best_validation_value
     
 
 def write_validation_result(energy_usage, mean_slowdown_time, obj, step, writer):

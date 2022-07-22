@@ -28,21 +28,26 @@ def F(mean_slowdown , consumed_joules, max_consumed_joules, alpha, beta, is_norm
     return alpha * mean_slowdown + beta * consumed_joules
 
 def compute_objective(sim_mon:SimulationMonitor, sim_handler:SimulatorHandler, alpha=0.5, beta=0.5, is_normalized=True):
-  platform = sim_handler.platform
-  hosts = platform.hosts
-  total_max_watt_per_min = 0
-  for host in hosts:
-    max_watt_per_min = 0
-    for pstate in host.pstates:
-      max_watt_per_min = max(max_watt_per_min, pstate.watt_full)
-    total_max_watt_per_min += max_watt_per_min
+    platform = sim_handler.platform
+    hosts = platform.hosts
+    total_max_watt_per_min = 0
+    for host in hosts:
+        max_watt_per_min = 0
+        for pstate in host.pstates:
+            max_watt_per_min = max(max_watt_per_min, pstate.watt_full)
+        total_max_watt_per_min += max_watt_per_min
 
-  total_time = sim_handler.current_time
-  max_consumed_joules = total_time*total_max_watt_per_min
-  consumed_joules = sim_mon.info["consumed_joules"]
-  mean_slowdown = sim_mon.info["mean_slowdown"]
-  score = F(mean_slowdown, consumed_joules, max_consumed_joules, alpha, beta, is_normalized)
-  return consumed_joules, mean_slowdown, score
+    total_time = sim_handler.current_time
+    max_consumed_joules = total_time*total_max_watt_per_min
+    consumed_joules = sim_mon.info["consumed_joules"]
+    mean_slowdown = sim_mon.info["mean_slowdown"]
+    time_idle = sim_mon.info['time_idle']
+    time_computing = sim_mon.info['time_computing']
+    time_switching_off = sim_mon.info['time_switching_off']
+    time_switching_on = sim_mon.info['time_switching_on']
+    time_sleeping = sim_mon.info['time_sleeping']
+    score = F(mean_slowdown, consumed_joules, max_consumed_joules, alpha, beta, is_normalized)
+    return consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping
 
 
 def learn(args, agent, agent_opt, critic, critic_opt, memory):
@@ -85,7 +90,7 @@ def learn(args, agent, agent_opt, critic, critic_opt, memory):
             weighted_probs = advantage[batch] * prob_ratio
             weighted_clipped_probs = T.clamp(prob_ratio, 1-args.ppo_clip,
                     1+args.ppo_clip)*advantage[batch]
-            actor_loss = -T.min(weighted_probs, weighted_clipped_probs).mean()
+            actor_loss = T.min(weighted_probs, weighted_clipped_probs).mean()
             agent_opt.zero_grad()
             actor_loss.backward()
             T.nn.utils.clip_grad_norm_(agent.parameters(), max_norm=args.grad_norm)

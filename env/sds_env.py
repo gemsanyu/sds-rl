@@ -25,20 +25,24 @@ SWITCH_ON = 2
 
 class SDS_ENV(Env):
     def __init__(self, 
-                 dataset_idx=None, 
+                 dataset_name, 
                  batsim_verbosity="quiet", 
                  alpha=0.5, 
                  beta=0.5, 
                  num_host=128, 
-                 is_validation=False,
-                 validation_workload_path=None) -> None:
+                 is_test=False) -> None:
         super(SDS_ENV, self).__init__()
         self.batsim_verbosity = batsim_verbosity
-        self.dataset_idx = dataset_idx
-        self.is_validation = is_validation
+        # self.dataset_idx = dataset_idx
+        self.dataset_name = dataset_name
+        self.is_test = is_test
         self.platform_path = pathlib.Path(".")/"platform"/("platform-"+str(num_host)+".xml")
-        self.dataset_dir = pathlib.Path(".")/"dataset"/"training"
-        self.validation_workload_path = validation_workload_path
+        self.dataset_dir = pathlib.Path(".")/"dataset"
+        if self.is_test:
+            self.dataset_dir= self.dataset_dir/"test"
+        else:
+            self.dataset_dir= self.dataset_dir/"training"
+        self.dataset_filepath = self.dataset_dir/self.dataset_name
         self.alpha = alpha
         self.beta = beta
         self.simulator = SimulatorHandler()
@@ -76,12 +80,13 @@ class SDS_ENV(Env):
         self.simulator.subscribe(JobEvent.SUBMITTED, self.add_to_job_infos)
         self.previous_wasted_energy = None
 
-        if self.validation_workload_path is not None:
-            dataset_filepath = self.validation_workload_path
-        else:
-            dataset_filename = "dataset-"+str(self.dataset_idx)+".json"
-            dataset_filepath = self.dataset_dir/dataset_filename
-        self.simulator.start(platform=self.platform_path, workload=dataset_filepath.absolute(), verbosity=self.batsim_verbosity)
+        # if self.validation_workload_path is not None:
+        #     dataset_filepath = self.validation_workload_path
+        # else:
+        #     dataset_filename = "dataset-"+str(self.dataset_idx)+".json"
+            # dataset_filepath = self.dataset_dir/dataset_filename
+        # dataset_filepath = self.dataset_dir/self.dataset_name
+        self.simulator.start(platform=self.platform_path, workload=self.dataset_filepath.absolute(), verbosity=self.batsim_verbosity)
         self.hosts = list(self.simulator.platform.hosts)
         self.host_monitor.update_info_all()
         
@@ -104,27 +109,26 @@ class SDS_ENV(Env):
         # proceed time, and schedule
         # get next features
         rewards = None
-        if self.simulator.is_running:
-            self.scheduler.schedule()
-            self.simulator.proceed_time(time=dt)  # proceed directly to the next event.
-            done = False
-        else:
+        if not self.simulator.is_running:
             # di sini jika done
             self.simulator.close()
-            if self.is_validation:
-                energy_usage, mean_slowdown_time, obj = compute_objective(self.simulation_monitor, self.simulator,alpha=self.alpha, beta=self.beta)
-                rewards = (energy_usage, mean_slowdown_time, obj)
-            self.reset()
             done=True
+            return None, rewards, done, None
+
+        # di sini jika belum done
+        self.scheduler.schedule()
+        self.simulator.proceed_time(time=dt)  # proceed directly to the next event.
+        done = False
         self.host_monitor.update_info_all()
         current_time = self.simulator.current_time
         features = self.get_features(current_time)
-        if rewards is None:
-            rewards = self.get_rewards(current_time, dt) 
+        rewards, wasted_energy, wasting_time_since_last_dt = self.get_rewards(current_time, dt) 
         mask = get_feasible_mask(list(self.simulator.platform.hosts))
-        return features, rewards, done, mask
+        return features, rewards, done, (mask, wasted_energy, wasting_time_since_last_dt)
 
     def apply(self, actions):
+        if len(actions.shape) > 1:
+            actions = actions.squeeze(0)
         hosts_id_to_switch_off = np.nonzero((actions == SWITCH_OFF)).squeeze(1).tolist()
         hosts_id_to_switch_on = np.nonzero((actions == SWITCH_ON)).squeeze(1).tolist()
         # print(hosts_id_to_switch_off)
@@ -156,7 +160,7 @@ class SDS_ENV(Env):
             waiting_time_since_last_dt += (waittime/dt)
         waiting_time_since_last_dt /= max(n_job_waitting,1)
         reward = -self.alpha*wasted_energy -self.beta*waiting_time_since_last_dt
-        return reward
+        return reward, wasted_energy, waiting_time_since_last_dt
 
     def get_features(self, current_time)-> Tuple[np.array, np.array]:
         

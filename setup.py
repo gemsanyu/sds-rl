@@ -35,15 +35,15 @@ def setup(args):
     checkpoint_path = checkpoint_dir/"checkpoint.pt"
 
     last_epoch = 0
-    best_validation_value = None
+    last_step = 0
     if os.path.isfile(checkpoint_path.absolute()):
         checkpoint = T.load(checkpoint_path.absolute(), map_location=agent.device)
         agent_state_dict = checkpoint["agent_state_dict"]
         agent_opt_state_dict = checkpoint["agent_opt_state_dict"]
         critic_state_dict = checkpoint["critic_state_dict"]
         critic_opt_state_dict = checkpoint["critic_opt_state_dict"]
-        last_epoch = checkpoint["last_epoch"]
-        best_validation_value = checkpoint["best_val_value"]
+        last_epoch = checkpoint["epoch"]
+        last_step = checkpoint["step"]
         agent.load_state_dict(agent_state_dict)
         agent_opt.load_state_dict(agent_opt_state_dict)
         critic.load_state_dict(critic_state_dict)
@@ -65,4 +65,4 @@ def setup(args):
     model_summary_dir.mkdir(parents=True, exist_ok=True)
     writer = SummaryWriter(log_dir=model_summary_dir.absolute())
 
-    return agent, critic, agent_opt, critic_opt, memory, last_epoch, best_validation_value, checkpoint_path, writer 
+    return agent, critic, agent_opt, critic_opt, memory, last_epoch, last_step, checkpoint_path, writer 

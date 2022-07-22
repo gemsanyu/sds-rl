@@ -32,6 +32,14 @@ def define_args_parser():
                         type=float,
                         default=10,
                         help='tanh clipping')
+    parser.add_argument('--alpha',
+                        type=float,
+                        default=0.5,
+                        help="energy objective importance weight")
+    parser.add_argument('--beta',
+                        type=float,
+                        default=0.5,
+                        help="slowdown objective importance weight")
 
 
 
@@ -58,7 +66,7 @@ def define_args_parser():
                         help='num of available datasets.')
     parser.add_argument('--num-envs',
                         type=int,
-                        default=8,
+                        default=1,
                         help='num of simultaneuos environments running.')
     parser.add_argument('--num-validation-envs',
                         type=int,
@@ -66,11 +74,11 @@ def define_args_parser():
                         help='num of simultaneuos environments running for validation step.')
     parser.add_argument('--training-steps',
                         type=int,
-                        default=64,
+                        default=256,
                         help='num of steps before one step training')
     parser.add_argument('--n-learning-epochs',
                         type=int,
-                        default=10,
+                        default=5,
                         help='num of learning epochs')
     parser.add_argument('--gamma',
                         type=float,
@@ -97,9 +105,13 @@ def define_args_parser():
                         type=str,
                         default="self-attention-v1",
                         help="experiment title savefiles' name")
-    parser.add_argument('--validation-workload-name',
+    parser.add_argument('--dataset-name',
                         type=str,
-                        default="workloads-nasa-cleaned-128host.json",
+                        default="nasa.json",
+                        help="workload path (job requests' details")
+    parser.add_argument('--workload-name',
+                        type=str,
+                        default="workloads-nasa-cleaned-128host-training.json",
                         help="workload path (job requests' details")
     parser.add_argument('--platform-path',
                         type=str,

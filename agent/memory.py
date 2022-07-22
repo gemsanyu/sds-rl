@@ -29,13 +29,29 @@ class PPOMemory:
                 batches
 
     def store_memory(self, state, mask, action, probs, vals, reward, done):
-        self.states += state.tolist()
-        self.masks += mask.tolist()
-        self.actions += action.tolist()
-        self.probs += probs.tolist()
-        self.vals += vals.tolist()
-        self.rewards += reward.tolist()
-        self.dones += done.tolist()
+        # if type(reward) != list:
+        #     state = [state]
+        #     mask = [mask]
+        #     action = [action]
+        #     probs = [probs]
+        #     vals = [vals]
+        #     reward = [reward]
+        #     done = [done]
+        # elif type(reward) == np.ndarray:
+        #     state = state.tolist()
+        #     mask = mask.tolist()
+        #     action = action.tolist()
+        #     probs = probs.tolist()
+        #     vals = vals.tolist()
+        #     reward = reward.tolist()
+        #     done = done.tolist()
+        self.states += [state.tolist()]
+        self.masks += [mask.tolist()]
+        self.actions += [action.tolist()]
+        self.probs += [probs.item()]
+        self.vals += [vals.item()]
+        self.rewards += [reward]
+        self.dones += [done]
         # print(self.states)
         # print(self.actions)
         # self.states.append(state)
