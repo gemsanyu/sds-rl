@@ -49,7 +49,7 @@ class SDS_ENV(Env):
         self.observation_shape = (self.n_host, self.num_sim_features+self.num_node_features)
         self.observation_space = spaces.Box(low = np.zeros(self.observation_shape), 
                                             high = np.ones(self.observation_shape),
-                                            dtype = np.float16)
+                                            dtype = np.float32)
         # Define an action space for each host, ranging from 0 to 3
         # 0. No Action
         # 1. Turn OFF
@@ -179,13 +179,14 @@ class SDS_ENV(Env):
         node_features[:, 1] = host_active_idle
         current_idle_time = get_current_idle_time(self.host_monitor)
         node_features[:, 2] = current_idle_time
+        # print(current_idle_time)
         remaining_runtime_percent = get_remaining_runtime_percent(list(self.simulator.platform.hosts), self.job_infos, self.simulator.current_time)
         node_features[:, 3] = remaining_runtime_percent
         normalized_wasted_energy = get_host_wasted_energy(self.host_monitor, True)
         node_features[:, 4] = normalized_wasted_energy
         normalized_switching_time = get_switching_time(self.host_monitor, True, self.simulator.current_time) 
         node_features[:, 5] = normalized_switching_time
-
         simulator_features = np.broadcast_to(simulator_features, (node_features.shape[0], simulator_features.shape[1]))
         features = np.concatenate((simulator_features, node_features), axis=1)
+        # print(features)
         return features

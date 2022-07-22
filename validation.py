@@ -43,12 +43,13 @@ def validate(args,
             features_ = T.from_numpy(features).to(agent.device).float()
             mask_ = T.from_numpy(mask).to(agent.device).float()
             check = T.logical_or(T.isnan(features_), T.isinf(features_))
-            check = check.sum(dim=1)
-            print(check)
+            # print(features_[:, :, 7:9])
+            # print(check[:, :, 7:9])
+            # check = check.sum(dim=1)
+            # print(check)
             probs, entropy = agent(features_, mask_)
             actions, logprobs = select(probs)
             new_features, rewards, done_list, new_mask = env.step(actions)
-            print(done_list)
             for i, done in enumerate(done_list):
                 if done:
                     is_env_done[i] = True
