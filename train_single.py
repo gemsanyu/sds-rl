@@ -1,18 +1,36 @@
 from random import randint
 from statistics import mean
 from time import time
+from tqdm import tqdm
+
 import gym
 import torch as T
 import numpy as np
-from tqdm import tqdm
+import pathlib
 
 from env.sds_env import SDS_ENV
 from config import get_args
 from utils import select, learn
 from setup import setup
-from validation import save_checkpoint
 
 NUM_DATASETS = 1000
+
+def save_checkpoint(agent_state_dict, 
+                    agent_opt_state_dict, 
+                    critic_state_dict,
+                    critic_opt_state_dict, 
+                    epoch,
+                    step,
+                    checkpoint_path:pathlib.Path):
+    checkpoint = {
+                    "agent_state_dict": agent_state_dict,
+                    "agent_opt_state_dict": agent_opt_state_dict,
+                    "critic_state_dict": critic_state_dict,   
+                    "critic_opt_state_dict":critic_opt_state_dict,
+                    "epoch":epoch,
+                    "step":step
+                }
+    T.save(checkpoint, checkpoint_path)
 
 if __name__ == "__main__":
     args = get_args()

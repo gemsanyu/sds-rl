@@ -4,7 +4,7 @@ from batsim_py.resources import Host, HostState
 import numpy as np
 
 
-def get_feasible_mask(hosts: list[Host]):
+def get_feasible_mask(hosts: 'list[Host]'):
     #fm[:, 0] = dibiarkan, dummy
     #fm[:, 1] = boleh matikan/tidak
     #fm[:, 2] = boleh hidupkan/tidak
