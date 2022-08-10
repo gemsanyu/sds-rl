@@ -49,16 +49,6 @@ def setup(args):
         critic.load_state_dict(critic_state_dict)
         critic_opt.load_state_dict(critic_opt_state_dict)
     memory = PPOMemory(args.mini_batch_size)
-
-
-    # # training env
-    # env_fns = [lambda: SDS_ENV(args.dataset_size) for _ in range(args.num_envs)]
-    # training_env = gym.vector.AsyncVectorEnv(env_fns, shared_memory=False)
-    # # validation env
-    # validation_dir = pathlib.Path(".")/"dataset"/"validation"
-    # validation_path = validation_dir/args.validation_workload_name
-    # validation_env = SDS_ENV(validation_workload_path=validation_path)
-
     summary_root = "runs"
     summary_dir = pathlib.Path(".")/summary_root
     model_summary_dir = summary_dir/args.title

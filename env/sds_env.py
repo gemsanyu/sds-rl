@@ -22,7 +22,6 @@ NO_OP = 0
 SWITCH_OFF = 1
 SWITCH_ON = 2
 
-
 class SDS_ENV(Env):
     def __init__(self, 
                  dataset_name, 
@@ -33,7 +32,6 @@ class SDS_ENV(Env):
                  is_test=False) -> None:
         super(SDS_ENV, self).__init__()
         self.batsim_verbosity = batsim_verbosity
-        # self.dataset_idx = dataset_idx
         self.dataset_name = dataset_name
         self.is_test = is_test
         self.platform_path = pathlib.Path(".")/"platform"/("platform-"+str(num_host)+".xml")
@@ -80,42 +78,29 @@ class SDS_ENV(Env):
         self.simulator.subscribe(JobEvent.SUBMITTED, self.add_to_job_infos)
         self.previous_wasted_energy = None
 
-        # if self.validation_workload_path is not None:
-        #     dataset_filepath = self.validation_workload_path
-        # else:
-        #     dataset_filename = "dataset-"+str(self.dataset_idx)+".json"
-            # dataset_filepath = self.dataset_dir/dataset_filename
-        # dataset_filepath = self.dataset_dir/self.dataset_name
         self.simulator.start(platform=self.platform_path, workload=self.dataset_filepath.absolute(), verbosity=self.batsim_verbosity)
         self.hosts = list(self.simulator.platform.hosts)
         self.host_monitor.update_info_all()
         
         features = self.get_features(self.simulator.current_time)
-        # features = np.expand_dims(features, 0)
         mask = get_feasible_mask(list(self.simulator.platform.hosts))
-        # mask = np.expand_dims(mask, 0)
+
         return features
 
     def get_mask(self):
         return get_feasible_mask(list(self.simulator.platform.hosts))
-# return features, mask
 
-    # return next features, reward, and done flag, and empty [](this is info)
-    # def step(self, actions_and_dt):
     def step(self, actions):
-        # actions, dt = actions_and_dt
         self.apply(actions)
         dt = 600
         # proceed time, and schedule
         # get next features
         rewards = None
         if not self.simulator.is_running:
-            # di sini jika done
             self.simulator.close()
             done=True
             return None, rewards, done, None
 
-        # di sini jika belum done
         self.scheduler.schedule()
         self.simulator.proceed_time(time=dt)  # proceed directly to the next event.
         done = False
@@ -124,6 +109,7 @@ class SDS_ENV(Env):
         features = self.get_features(current_time)
         rewards, wasted_energy, wasting_time_since_last_dt = self.get_rewards(current_time, dt) 
         mask = get_feasible_mask(list(self.simulator.platform.hosts))
+
         return features, rewards, done, (mask, wasted_energy, wasting_time_since_last_dt)
 
     def apply(self, actions):
@@ -131,7 +117,7 @@ class SDS_ENV(Env):
             actions = actions.squeeze(0)
         hosts_id_to_switch_off = np.nonzero((actions == SWITCH_OFF)).squeeze(1).tolist()
         hosts_id_to_switch_on = np.nonzero((actions == SWITCH_ON)).squeeze(1).tolist()
-        # print(hosts_id_to_switch_off)
+
         if len(hosts_id_to_switch_off) > 0:
             self.simulator.switch_off(hosts_id_to_switch_off)
         if len(hosts_id_to_switch_on) > 0:
@@ -156,14 +142,13 @@ class SDS_ENV(Env):
             if job.start_time is not None:
                 waittime = job.start_time - last_dt
             else:
-                waittime = dt # atau current_time-last_dt
+                waittime = dt
             waiting_time_since_last_dt += (waittime/dt)
         waiting_time_since_last_dt /= max(n_job_waitting,1)
         reward = -self.alpha*wasted_energy -self.beta*waiting_time_since_last_dt
         return reward, wasted_energy, waiting_time_since_last_dt
 
     def get_features(self, current_time)-> Tuple[np.array, np.array]:
-        
         simulator_features = np.zeros((self.num_sim_features,), dtype=np.float32)
         simulator_features[0] = len(self.simulator.queue)
         submission_time = self.job_monitor.info["submission_time"]
@@ -183,7 +168,7 @@ class SDS_ENV(Env):
         node_features[:, 1] = host_active_idle
         current_idle_time = get_current_idle_time(self.host_monitor)
         node_features[:, 2] = current_idle_time
-        # print(current_idle_time)
+
         remaining_runtime_percent = get_remaining_runtime_percent(list(self.simulator.platform.hosts), self.job_infos, self.simulator.current_time)
         node_features[:, 3] = remaining_runtime_percent
         normalized_wasted_energy = get_host_wasted_energy(self.host_monitor, True)
@@ -192,5 +177,5 @@ class SDS_ENV(Env):
         node_features[:, 5] = normalized_switching_time
         simulator_features = np.broadcast_to(simulator_features, (node_features.shape[0], simulator_features.shape[1]))
         features = np.concatenate((simulator_features, node_features), axis=1)
-        # print(features)
+
         return features

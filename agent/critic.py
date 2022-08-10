@@ -5,7 +5,6 @@ from agent.graph_encoder import GraphAttentionEncoder
 
 CPU_DEVICE = T.device("cpu")
 
-# class Critic(nn.Module):
 class Critic(T.jit.ScriptModule):
     def __init__(self,
             n_heads: int = 8,
@@ -39,12 +38,6 @@ class Critic(T.jit.ScriptModule):
     @T.jit.script_method
     def forward(self, features:T.Tensor)->T.Tensor:
         embeddings, env_embeddings = self.gae(features)
-        # rata-rata sebelum:
-        #     apakah mean  of embeddings = representative
-        #     less runtime
         values = self.value_layers(env_embeddings).squeeze(1)
-        # rata-rata sesudah:
-        #     bisakah critic memprediksi sumbangsih tiap host terhadap state value?
-        # values = self.value_layers(embeddings).mean(dim=1)
-        # values = self.value_layers(env_embeddings)
+
         return values

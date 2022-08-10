@@ -1,5 +1,3 @@
-
-# note only the validation results, others are logged in main loop(?)
 import pathlib
 
 import numpy as np
@@ -43,10 +41,7 @@ def validate(args,
             features_ = T.from_numpy(features).to(agent.device).float()
             mask_ = T.from_numpy(mask).to(agent.device).float()
             check = T.logical_or(T.isnan(features_), T.isinf(features_))
-            # print(features_[:, :, 7:9])
-            # print(check[:, :, 7:9])
-            # check = check.sum(dim=1)
-            # print(check)
+ 
             probs, entropy = agent(features_, mask_)
             actions, logprobs = select(probs)
             new_features, rewards, done_list, new_mask = env.step(actions)
@@ -107,7 +102,6 @@ def save_checkpoint(agent_state_dict,
     
 
 def write_validation_result(energy_usage, mean_slowdown_time, obj, step, writer):
-    # obj = weighted sum energy, turnaround
     writer.add_scalar("Energy Usage", energy_usage, step)
     writer.add_scalar("Mean Slowdown Time", mean_slowdown_time, step)
     writer.add_scalar("Obj Function", obj, step)

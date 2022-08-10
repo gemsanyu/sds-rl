@@ -59,7 +59,6 @@ def learn(args, agent, agent_opt, critic, critic_opt, memory):
         values = vals_arr
         advantage = np.zeros(len(reward_arr), dtype=np.float32)
 
-
         # diubah agar tidak nested loop
         # perhitungan GAE generalized advantage estimation
         advantage = [0 for _ in range(len(reward_arr))]

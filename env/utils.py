@@ -18,9 +18,8 @@ def get_feasible_mask(hosts: list[Host]):
 
     # can it be switched off
     is_really_idle = np.logical_and(is_idle, np.logical_not(is_allocated))
-    # print(np.logical_and(is_idle, is_sleeping))
-    # print(is_sleeping)
     feasible_mask[:, 1] = np.logical_and(np.logical_not(is_switching), is_really_idle)
+
     # can it be switched on
     feasible_mask[:, 2] = np.logical_and(np.logical_not(is_switching), is_sleeping)
     return feasible_mask
@@ -66,23 +65,22 @@ def get_mean_waittime_queue(queue, current_time, is_normalized):
 def get_wasted_energy(energy_mon, host_mon, is_normalized):
     wasted_energy = host_mon.info["energy_waste"]
     all_energy = host_mon.info["consumed_joules"]
-    # print(wasted_energy)
-    # print(all_energy)
-    # total_energy = np.sum(np.asarray(all_energy, dtype=np.float32))
-    # print(total_energy)
+
     if is_normalized and all_energy>0:
         wasted_energy = wasted_energy/all_energy
-        # wasted_energy[np.isnan(wasted_energy)] = 0
+
     return wasted_energy
 
 def get_host_on_off(platform):
     host_states = [[0 if state is HostState.SLEEPING else 1 for state in platform.state]]
     host_states = np.asarray(host_states)
+
     return host_states
 
 def get_host_active_idle(platform):
     host_states = [[0 if (state is HostState.IDLE) else 1 for state in platform.state]]
     host_states = np.asarray(host_states)
+
     return host_states
 
 def get_current_idle_time(host_monitor):
@@ -91,6 +89,7 @@ def get_current_idle_time(host_monitor):
     for id in host_info.keys():
         current_idle_time[0][int(id)] = host_info[int(id)]["time_idle_current"]
     current_idle_time = np.asarray(current_idle_time)
+
     return current_idle_time
 
 def get_host_wasted_energy(host_monitor, is_normalized=False):
@@ -101,6 +100,7 @@ def get_host_wasted_energy(host_monitor, is_normalized=False):
         if is_normalized and host_info[int(id)]["consumed_joules"]:
             wasted_energy[0][int(id)] /= host_info[int(id)]["consumed_joules"]
     wasted_energy = np.asarray(wasted_energy)
+
     return wasted_energy
 
 def get_remaining_runtime_percent(hosts, job_infos, current_time):
@@ -111,6 +111,7 @@ def get_remaining_runtime_percent(hosts, job_infos, current_time):
             remaining_runtime[i] = current_time-job.start_time
             remaining_runtime[i] /= job.walltime
     remaining_runtime = np.asarray([remaining_runtime])
+
     return remaining_runtime
 
 def get_switching_time(host_monitor, is_normalized=False, current_time=1):
@@ -122,6 +123,7 @@ def get_switching_time(host_monitor, is_normalized=False, current_time=1):
         if is_normalized and current_time:
             switching_time[0][int(id)] /= current_time
     switching_time = np.asarray(switching_time)
+
     return switching_time    
 
 
@@ -140,4 +142,5 @@ def compute_objective(sim_mon:SimulationMonitor, sim_handler:SimulatorHandler, a
   consumed_joules = sim_mon.info["consumed_joules"]
   mean_slowdown = sim_mon.info["mean_slowdown"]
   score = F(mean_slowdown, consumed_joules, max_consumed_joules, alpha, beta, is_normalized)
+  
   return consumed_joules, mean_slowdown, score
