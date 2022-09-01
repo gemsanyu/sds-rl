@@ -56,12 +56,11 @@ if __name__ == "__main__":
                 features = new_features
                 features = np.concatenate(features)
                 features = features.reshape(args.num_envs, -1, 11)
-                if done:
-                    break
-                new_mask, wasted_energy, waiting_time_since_last_dt = info
-                mask = new_mask
-                mask = np.asanyarray(mask)
-                mask = mask.reshape(args.num_envs, -1, 3)
+                if not done:
+                    new_mask, wasted_energy, waiting_time_since_last_dt = info
+                    mask = new_mask
+                    mask = np.asanyarray(mask)
+                    mask = mask.reshape(args.num_envs, -1, 3)
 
             #log important values
             writer.add_scalar("Reward", rewards, step)
