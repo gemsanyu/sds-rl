@@ -97,7 +97,6 @@ class SDS_ENV(Env):
         # get next features
         rewards = None
         if not self.simulator.is_running:
-            self.simulator.close()
             done=True
             return None, rewards, done, None
 

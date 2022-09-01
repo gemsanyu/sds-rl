@@ -1,9 +1,3 @@
-from random import randint
-from statistics import mean
-from time import time
-from tqdm import tqdm
-
-import gym
 import torch as T
 import numpy as np
 import pathlib
@@ -42,7 +36,7 @@ if __name__ == "__main__":
     args.num_envs = 1
     for epoch in range(last_epoch, args.max_epoch):
         # mulai generate experience dari training environments
-        env = SDS_ENV(dataset_name=args.dataset_name, batsim_verbosity="information", is_test=False, alpha=args.alpha, beta=args.beta)
+        env = SDS_ENV(dataset_name=args.dataset_name, batsim_verbosity="quiet", is_test=False, alpha=args.alpha, beta=args.beta)
         mask = np.ones((args.num_envs, 128, 3))
         mask[:,:,2] = 0
         features = env.reset() 
@@ -57,12 +51,14 @@ if __name__ == "__main__":
                 probs, entropy = agent(features_, mask_)
                 actions, logprobs = select(probs)
                 new_features, rewards, done, info = env.step(actions)
-                new_mask, wasted_energy, waiting_time_since_last_dt = info
                 critic_vals = critic(features_)
                 memory.store_memory(features[0], mask[0], actions[0], logprobs[0], critic_vals[0], rewards, done)
                 features = new_features
                 features = np.concatenate(features)
                 features = features.reshape(args.num_envs, -1, 11)
+                if done:
+                    break
+                new_mask, wasted_energy, waiting_time_since_last_dt = info
                 mask = new_mask
                 mask = np.asanyarray(mask)
                 mask = mask.reshape(args.num_envs, -1, 3)
@@ -80,8 +76,6 @@ if __name__ == "__main__":
             writer.add_scalar("Time Sleeping", env.host_monitor.info["time_sleeping"], step)
             writer.add_scalar("Number of Switching State", env.host_monitor.info["nb_switches"], step)
                 
-            # save_checkpoint(agent.state_dict(), agent_opt.state_dict(), critic.state_dict(), critic_opt.state_dict(), 0, 0, checkpoint_path)
-            # exit()
             if step > 0 and step % args.training_steps == 0:
                 if len(memory) >= args.training_steps:
                     learn(args, agent, agent_opt, critic, critic_opt, memory)
