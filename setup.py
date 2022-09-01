@@ -48,6 +48,8 @@ def setup(args):
         agent_opt.load_state_dict(agent_opt_state_dict)
         critic.load_state_dict(critic_state_dict)
         critic_opt.load_state_dict(critic_opt_state_dict)
+    else:
+        print("CHECKPOINT NOT FOUND, new run?")
     memory = PPOMemory(args.mini_batch_size)
     summary_root = "runs"
     summary_dir = pathlib.Path(".")/summary_root

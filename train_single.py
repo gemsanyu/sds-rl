@@ -35,7 +35,6 @@ def save_checkpoint(agent_state_dict,
 if __name__ == "__main__":
     args = get_args()
     agent, critic, agent_opt, critic_opt, memory, last_epoch, last_step, checkpoint_path, writer = setup(args)
-
     # start training
     # 1 epoch = 1 full training data,, not the epoch commonly understood (?)
     # init training environment
@@ -43,7 +42,7 @@ if __name__ == "__main__":
     args.num_envs = 1
     for epoch in range(last_epoch, args.max_epoch):
         # mulai generate experience dari training environments
-        env = SDS_ENV(dataset_name=args.dataset_name, is_test=False, alpha=args.alpha, beta=args.beta)
+        env = SDS_ENV(dataset_name=args.dataset_name, batsim_verbosity="information", is_test=False, alpha=args.alpha, beta=args.beta)
         mask = np.ones((args.num_envs, 128, 3))
         mask[:,:,2] = 0
         features = env.reset() 
@@ -81,9 +80,11 @@ if __name__ == "__main__":
             writer.add_scalar("Time Sleeping", env.host_monitor.info["time_sleeping"], step)
             writer.add_scalar("Number of Switching State", env.host_monitor.info["nb_switches"], step)
                 
-
+            # save_checkpoint(agent.state_dict(), agent_opt.state_dict(), critic.state_dict(), critic_opt.state_dict(), 0, 0, checkpoint_path)
+            # exit()
             if step > 0 and step % args.training_steps == 0:
-                learn(args, agent, agent_opt, critic, critic_opt, memory)
+                if len(memory) >= args.training_steps:
+                    learn(args, agent, agent_opt, critic, critic_opt, memory)
                 memory.clear_memory()
                 save_checkpoint(agent.state_dict(), agent_opt.state_dict(), critic.state_dict(), critic_opt.state_dict(), epoch, step, checkpoint_path)
             step+=1

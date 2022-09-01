@@ -28,6 +28,9 @@ class PPOMemory:
                 np.array(self.dones),\
                 batches
 
+    def __len__(self):
+        return len(self.states)
+
     def store_memory(self, state, mask, action, probs, vals, reward, done):
         self.states += [state.tolist()]
         self.masks += [mask.tolist()]
