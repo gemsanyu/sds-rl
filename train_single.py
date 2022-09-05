@@ -36,7 +36,7 @@ if __name__ == "__main__":
     args.num_envs = 1
     for epoch in range(last_epoch, args.max_epoch):
         # mulai generate experience dari training environments
-        env = SDS_ENV(dataset_name=args.dataset_name, batsim_verbosity="information", is_test=False, alpha=args.alpha, beta=args.beta)
+        env = SDS_ENV(dataset_name=args.dataset_name, batsim_verbosity="quiet", is_test=False, alpha=args.alpha, beta=args.beta)
         mask = np.ones((args.num_envs, 128, 3))
         mask[:,:,2] = 0
         features = env.reset() 
