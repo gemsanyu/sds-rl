@@ -1,4 +1,5 @@
 import csv
+import queue
 from random import randint
 import sys
 import pathlib
@@ -12,7 +13,7 @@ import numpy as np
 
 from batsim_py import SimulatorHandler
 from batsim_py import SimulatorHandler
-from batsim_py.monitors import SimulationMonitor, HostMonitor, ConsumedEnergyMonitor, JobMonitor
+from batsim_py.monitors import HostStateSwitchMonitor, SimulationMonitor, HostMonitor, ConsumedEnergyMonitor, JobMonitor
 from batsim_py.events import JobEvent
 
 from env.easy_backfilling import EASYScheduler
@@ -70,6 +71,7 @@ class SDS_ENV(Env):
         # 1) Instantiate monitors to collect simulation statistics
         self.simulation_monitor = SimulationMonitor(self.simulator)
         self.host_monitor = HostMonitor(self.simulator)
+        self.host_state_switch_monitor = HostStateSwitchMonitor(self.simulator)
         self.energy_monitor = ConsumedEnergyMonitor(self.simulator)
         self.job_monitor = JobMonitor(self.simulator)
 
@@ -95,20 +97,32 @@ class SDS_ENV(Env):
         dt = 600
         # proceed time, and schedule
         # get next features
-        rewards = None
-        if not self.simulator.is_running:
+        current_time = self.simulator.current_time
+        rewards, _, _ = self.get_rewards(current_time, dt) 
+        is_really_running = not self.simulator.is_submitter_finished
+        is_really_running = is_really_running or len(self.simulator.jobs) > 0
+        is_really_running = is_really_running or self.host_state_switch_monitor.info["nb_computing"][-1] > 0
+        if not is_really_running:
             done=True
+            self.simulator.proceed_time()
+            self.host_monitor.update_info_all()
+            self.simulator.close()
             return None, rewards, done, None
 
         self.scheduler.schedule()
         self.simulator.proceed_time(time=dt)  # proceed directly to the next event.
         done = False
         self.host_monitor.update_info_all()
+        # print("A---------------------A")
+        # print(is_really_running)
+        # print(self.simulator.jobs, len(self.simulator.jobs))
+        # print(self.simulator.is_running, self.simulator.is_submitter_finished)
+        # print(len(self.simulator.queue))
+        # print(self.host_state_switch_monitor.info["nb_computing"])
         current_time = self.simulator.current_time
         features = self.get_features(current_time)
-        rewards, wasted_energy, wasting_time_since_last_dt = self.get_rewards(current_time, dt) 
         mask = get_feasible_mask(list(self.simulator.platform.hosts))
-
+        rewards, wasted_energy, wasting_time_since_last_dt = self.get_rewards(current_time, dt) 
         return features, rewards, done, (mask, wasted_energy, wasting_time_since_last_dt)
 
     def apply(self, actions):
@@ -129,6 +143,8 @@ class SDS_ENV(Env):
             wasted_energy -= self.previous_wasted_energy
         wasted_energy /= (190.*self.n_host*dt)
         self.previous_wasted_energy = wasted_energy_
+        if not self.simulator.is_running:
+            return -self.alpha*wasted_energy, wasted_energy, 0
 
         waiting_time_since_last_dt = 0.
         n_job_waitting = 0

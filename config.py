@@ -46,7 +46,7 @@ def define_args_parser():
     # Misc
     parser.add_argument('--max-epoch',
                         type=int,
-                        default=30,
+                        default=1,
                         help='Maximum training epoch.')
     parser.add_argument('--max-training-steps',
                         type=int,
