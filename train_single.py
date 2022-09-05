@@ -79,5 +79,5 @@ if __name__ == "__main__":
                 if len(memory) >= args.training_steps:
                     learn(args, agent, agent_opt, critic, critic_opt, memory)
                 memory.clear_memory()
-                # save_checkpoint(agent.state_dict(), agent_opt.state_dict(), critic.state_dict(), critic_opt.state_dict(), epoch, step, checkpoint_path)
+                save_checkpoint(agent.state_dict(), agent_opt.state_dict(), critic.state_dict(), critic_opt.state_dict(), epoch, step, checkpoint_path)
             step+=1
