@@ -94,7 +94,7 @@ class SDS_ENV(Env):
 
     def step(self, actions):
         self.apply(actions)
-        dt = 600
+        dt = 1800
         # proceed time, and schedule
         # get next features
         current_time = self.simulator.current_time
