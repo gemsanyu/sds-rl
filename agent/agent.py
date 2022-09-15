@@ -42,7 +42,7 @@ class Agent(T.jit.ScriptModule):
         embeddings, mean_embeddings = self.gae(features)
         v = self.v.expand(batch_size, self.embed_dim, 3)
 
-        logits = T.bmm(embeddings, v)
+        logits = T.bmm(embeddings, v) / math.sqrt(self.embed_dim)
         logits = logits + mask.log()
             
         probs = T.softmax(logits, dim=2)

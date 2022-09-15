@@ -6,8 +6,11 @@ from batsim_py import simulator
 from env.sds_env import SDS_ENV
 from timeout_policy import TimeoutPolicy
 from config import get_args
-from utils import select, compute_objective
+from utils import select, compute_objective, run_partly_with_baseline, ResultInfo
 from setup import setup
+
+from batsim_py.monitors import HostStateSwitchMonitor, SimulationMonitor, HostMonitor, ConsumedEnergyMonitor, JobMonitor
+
 
 NUM_DATASETS = 1000
 
@@ -38,16 +41,42 @@ if __name__ == "__main__":
     # mulai generate experience dari training environments
     env = SDS_ENV(dataset_name=args.dataset_name, batsim_verbosity="information", is_test=True, alpha=args.alpha, beta=args.beta)
     env.reset()
+
+    run_partly_with_baseline(env)
+    result_prerun = ResultInfo(
+        env.simulation_monitor.info["total_slowdown"],
+        env.simulation_monitor.info["nb_jobs_finished"],
+        env.simulator.current_time,
+        env.simulation_monitor.info["consumed_joules"],
+        env.simulation_monitor.info["time_idle"],
+        env.simulation_monitor.info["time_computing"],
+        env.simulation_monitor.info["time_switching_off"],
+        env.simulation_monitor.info["time_switching_on"],
+        env.simulation_monitor.info["time_sleeping"]
+    )
+
     timeout_policy = TimeoutPolicy(args.timeout, env.simulator)
-    done = False       
     while env.simulator.is_running:
         env.scheduler.schedule()
         env.simulator.proceed_time()
-        
+
+    result_current = ResultInfo(
+        env.simulation_monitor.info["total_slowdown"],
+        env.simulation_monitor.info["nb_jobs_finished"],
+        env.simulator.current_time,
+        env.simulation_monitor.info["consumed_joules"],
+        env.simulation_monitor.info["time_idle"],
+        env.simulation_monitor.info["time_computing"],
+        env.simulation_monitor.info["time_switching_off"],
+        env.simulation_monitor.info["time_switching_on"],
+        env.simulation_monitor.info["time_sleeping"]
+    )
+    print(result_prerun)
+    print(result_current)
 
     alpha=0.5
     beta=0.5
-    consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping = compute_objective(env.simulation_monitor, env.simulator, alpha, beta)
+    consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping = compute_objective(env.simulator, result_current, result_prerun, alpha, beta)
     print("OBJECTIVE:", score)
     print("CONSUMED JOULES:", consumed_joules)
     print("MEAN SLOWDOWN:", mean_slowdown)

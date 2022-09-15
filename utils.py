@@ -1,7 +1,23 @@
+from typing import NamedTuple, Optional
+import json
+
 import numpy as np
 import torch as T
+
+from env.sds_env import SDS_ENV
 from batsim_py.monitors import SimulationMonitor
 from batsim_py.simulator import SimulatorHandler
+
+class ResultInfo(NamedTuple):
+    total_slowdown: float
+    num_jobs_finished: int
+    current_time: float
+    consumed_joules: float
+    time_idle : float
+    time_computing : float
+    time_switching_off : float
+    time_switching_on : float
+    time_sleeping : float
 
 def select(probs, is_training=True):
     '''
@@ -27,7 +43,7 @@ def F(mean_slowdown , consumed_joules, max_consumed_joules, alpha, beta, is_norm
         consumed_joules = consumed_joules/max_consumed_joules
     return alpha * mean_slowdown + beta * consumed_joules
 
-def compute_objective(sim_mon:SimulationMonitor, sim_handler:SimulatorHandler, alpha=0.5, beta=0.5, is_normalized=True):
+def compute_objective(sim_handler:SimulatorHandler, result:ResultInfo, result_prerun: Optional[ResultInfo]=None, alpha=0.5, beta=0.5, is_normalized=True):
     platform = sim_handler.platform
     hosts = platform.hosts
     total_max_watt_per_min = 0
@@ -37,15 +53,30 @@ def compute_objective(sim_mon:SimulationMonitor, sim_handler:SimulatorHandler, a
             max_watt_per_min = max(max_watt_per_min, pstate.watt_full)
         total_max_watt_per_min += max_watt_per_min
 
-    total_time = sim_handler.current_time
+    total_time = result.current_time
+    if result_prerun is not None:
+        total_time -= result_prerun.current_time
+    consumed_joules = result.consumed_joules
+    total_slowdown = result.total_slowdown
+    num_jobs_finished = result.num_jobs_finished
+    time_idle = result.time_idle
+    time_computing = result.time_computing
+    time_switching_off = result.time_switching_off
+    time_switching_on = result.time_switching_on
+    time_sleeping = result.time_sleeping
+    
+    if result_prerun is not None:
+        consumed_joules -= result_prerun.consumed_joules
+        total_slowdown -= result_prerun.total_slowdown
+        num_jobs_finished -= result_prerun.num_jobs_finished
+        time_idle -= result_prerun.time_idle
+        time_computing -= result_prerun.time_computing
+        time_switching_off -= result_prerun.time_switching_off
+        time_switching_on -= result_prerun.time_switching_on
+        time_sleeping -= result_prerun.time_sleeping
     max_consumed_joules = total_time*total_max_watt_per_min
-    consumed_joules = sim_mon.info["consumed_joules"]
-    mean_slowdown = sim_mon.info["mean_slowdown"]
-    time_idle = sim_mon.info['time_idle']
-    time_computing = sim_mon.info['time_computing']
-    time_switching_off = sim_mon.info['time_switching_off']
-    time_switching_on = sim_mon.info['time_switching_on']
-    time_sleeping = sim_mon.info['time_sleeping']
+    mean_slowdown = total_slowdown/num_jobs_finished
+
     score = F(mean_slowdown, consumed_joules, max_consumed_joules, alpha, beta, is_normalized)
     return consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping
 
@@ -102,3 +133,17 @@ def learn(args, agent, agent_opt, critic, critic_opt, memory):
             critic_loss.backward()
             T.nn.utils.clip_grad_norm_(agent.parameters(), max_norm=args.grad_norm)
             critic_opt.step()
+
+def run_partly_with_baseline(env: SDS_ENV, completed_percentage_target=0.8):
+    num_jobs = 0
+    with open(env.dataset_filepath) as json_file:
+        data = json.load(json_file)
+        num_jobs = len(data["jobs"])
+
+    while env.simulator.is_running:
+        env.scheduler.schedule()
+        env.simulator.proceed_time()
+        num_completed_jobs = len(env.job_monitor.info["job_id"])
+        completed_percentage = (num_completed_jobs/num_jobs)
+        if completed_percentage > completed_percentage_target:
+            return
