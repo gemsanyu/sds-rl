@@ -37,30 +37,38 @@ if __name__ == "__main__":
     for epoch in range(last_epoch, args.max_epoch):
         # mulai generate experience dari training environments
         env = SDS_ENV(dataset_name=args.dataset_name, batsim_verbosity="quiet", is_test=False, alpha=args.alpha, beta=args.beta)
-        mask = np.ones((args.num_envs, 128, 3))
-        mask[:,:,2] = 0
+        mask = np.ones((args.num_envs, 128, 2))
+        mask[:,:,1] = 0
         features = env.reset() 
         features = features.reshape(args.num_envs, -1, 11)
-        done = False       
+        done = False
+        saved_logprobs = []
+        saved_rewards = []
+        agent.train()
         while not done:
-            # rollout / solve env/ run episode -> gather experiences..
-            with T.no_grad():
-                agent.eval()
-                features_ = T.from_numpy(features).to(agent.device).float()
-                mask_ = T.from_numpy(mask).to(agent.device).float()
-                probs, entropy = agent(features_, mask_)
-                actions, logprobs = select(probs)
-                new_features, rewards, done, info = env.step(actions)
-                critic_vals = critic(features_)
-                memory.store_memory(features[0], mask[0], actions[0], logprobs[0], critic_vals[0], rewards, done)
-                if not done:
-                    features = new_features
-                    features = np.concatenate(features)
-                    features = features.reshape(args.num_envs, -1, 11)
-                    new_mask, wasted_energy, waiting_time_since_last_dt = info
-                    mask = new_mask
-                    mask = np.asanyarray(mask)
-                    mask = mask.reshape(args.num_envs, -1, 3)
+            features_ = T.from_numpy(features).to(agent.device).float()
+            mask_ = T.from_numpy(mask).to(agent.device).float()
+            if not T.any(mask_):
+                env.simulator.proceed_time(time=1800)
+                done = env.is_really_running
+                features = env.get_features(env.simulator.current_time)
+                mask = env.get_mask()
+                continue
+            probs, entropy = agent(features_, mask_)
+            need_decision_idx = T.any(mask_, dim=2).nonzero()[:,1]
+            print(need_decision_idx)
+            exit()
+            actions, logprobs = select(probs)
+            new_features, rewards, done, info = env.step(need_decision_idx, actions)
+            critic_vals = critic(features_)
+            if not done:
+                features = new_features
+                features = np.concatenate(features)
+                features = features.reshape(args.num_envs, -1, 11)
+                new_mask, wasted_energy, waiting_time_since_last_dt = info
+                mask = new_mask
+                mask = np.asanyarray(mask)
+                mask = mask.reshape(args.num_envs, -1, 3)
 
             #log important values
             writer.add_scalar("Reward", rewards, step)
@@ -75,9 +83,7 @@ if __name__ == "__main__":
             writer.add_scalar("Time Sleeping", env.host_monitor.info["time_sleeping"], step)
             writer.add_scalar("Number of Switching State", env.host_monitor.info["nb_switches"], step)
                 
-            if step > 0 and step % args.training_steps == 0:
-                if len(memory) >= args.training_steps:
-                    learn(args, agent, agent_opt, critic, critic_opt, memory)
-                memory.clear_memory()
+            if step > 0 and len(saved_logprobs) >= args.training_steps:
+                
                 save_checkpoint(agent.state_dict(), agent_opt.state_dict(), critic.state_dict(), critic_opt.state_dict(), epoch, step, checkpoint_path)
             step+=1

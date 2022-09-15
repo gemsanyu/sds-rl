@@ -92,17 +92,15 @@ class SDS_ENV(Env):
     def get_mask(self):
         return get_feasible_mask(list(self.simulator.platform.hosts))
 
-    def step(self, actions):
+    def step(self, node_idx, actions):
         self.apply(actions)
         dt = 1800
         # proceed time, and schedule
         # get next features
         current_time = self.simulator.current_time
         rewards, _, _ = self.get_rewards(current_time, dt) 
-        is_really_running = not self.simulator.is_submitter_finished
-        is_really_running = is_really_running or len(self.simulator.jobs) > 0
-        is_really_running = is_really_running or self.host_state_switch_monitor.info["nb_computing"][-1] > 0
-        if not is_really_running:
+        
+        if not self.is_really_running:
             done=True
             self.simulator.proceed_time()
             self.host_monitor.update_info_all()
@@ -124,6 +122,16 @@ class SDS_ENV(Env):
         mask = get_feasible_mask(list(self.simulator.platform.hosts))
         rewards, wasted_energy, wasting_time_since_last_dt = self.get_rewards(current_time, dt) 
         return features, rewards, done, (mask, wasted_energy, wasting_time_since_last_dt)
+
+    @property
+    def is_really_running(self):
+        is_really_running_ = not self.simulator.is_submitter_finished
+        is_really_running_ = is_really_running_ or len(self.simulator.jobs) > 0
+        is_really_running_ = is_really_running_ or self.host_state_switch_monitor.info["nb_computing"][-1] > 0
+        return is_really_running_
+
+    def get_mask(self):
+        return get_feasible_mask(list(self.simulator.platform.hosts))
 
     def apply(self, actions):
         if len(actions.shape) > 1:

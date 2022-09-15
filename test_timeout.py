@@ -71,8 +71,6 @@ if __name__ == "__main__":
         env.simulation_monitor.info["time_switching_on"],
         env.simulation_monitor.info["time_sleeping"]
     )
-    print(result_prerun)
-    print(result_current)
 
     alpha=0.5
     beta=0.5

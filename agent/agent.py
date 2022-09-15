@@ -30,7 +30,7 @@ class Agent(T.jit.ScriptModule):
                                          embed_dim=embed_dim,
                                          node_dim=input_dim,
                                          feed_forward_hidden=gae_ff_hidden)
-        v = T.zeros((1, embed_dim, 3), dtype=T.float32)
+        v = T.zeros((1, embed_dim, 2), dtype=T.float32)
         self.v = nn.Parameter(v)
         stdv = 1./math.sqrt(embed_dim)
         self.v.data.uniform_(-stdv, stdv)
@@ -40,7 +40,7 @@ class Agent(T.jit.ScriptModule):
     def forward(self, features:T.Tensor, mask:T.Tensor)->Tuple[T.Tensor, T.Tensor]:
         batch_size, num_hosts, _ = features.shape
         embeddings, mean_embeddings = self.gae(features)
-        v = self.v.expand(batch_size, self.embed_dim, 3)
+        v = self.v.expand(batch_size, self.embed_dim, 2)
 
         logits = T.bmm(embeddings, v) / math.sqrt(self.embed_dim)
         logits = logits + mask.log()

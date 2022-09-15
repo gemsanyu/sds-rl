@@ -22,7 +22,8 @@ def get_feasible_mask(hosts: 'list[Host]'):
 
     # can it be switched on
     feasible_mask[:, 2] = np.logical_and(np.logical_not(is_switching), is_sleeping)
-    return feasible_mask
+    # return cuma 2 action, update 15-09-2022
+    return feasible_mask[:, 1:]
 
 
 def get_arrival_rate(submission_times, is_normalized=True):
