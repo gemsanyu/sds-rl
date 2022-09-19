@@ -9,7 +9,7 @@ from batsim_py.monitors import SimulationMonitor
 from batsim_py.simulator import SimulatorHandler
 
 class ResultInfo(NamedTuple):
-    total_slowdown: float
+    mean_slowdown: float
     num_jobs_finished: int
     current_time: float
     consumed_joules: float
