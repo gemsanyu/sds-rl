@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     run_partly_with_baseline(env)
     result_prerun = ResultInfo(
-        env.simulation_monitor.info["total_slowdown"],
+        env.simulation_monitor.info["mean_slowdown"],
         env.simulation_monitor.info["nb_jobs_finished"],
         env.simulator.current_time,
         env.simulation_monitor.info["consumed_joules"],
@@ -52,7 +52,8 @@ if __name__ == "__main__":
         env.simulation_monitor.info["time_computing"],
         env.simulation_monitor.info["time_switching_off"],
         env.simulation_monitor.info["time_switching_on"],
-        env.simulation_monitor.info["time_sleeping"]
+        env.simulation_monitor.info["time_sleeping"],
+        env.simulation_monitor.info["energy_waste"]
     )
 
     timeout_policy = TimeoutPolicy(args.timeout, env.simulator)
@@ -61,7 +62,7 @@ if __name__ == "__main__":
         env.simulator.proceed_time()
 
     result_current = ResultInfo(
-        env.simulation_monitor.info["total_slowdown"],
+        env.simulation_monitor.info["mean_slowdown"],
         env.simulation_monitor.info["nb_jobs_finished"],
         env.simulator.current_time,
         env.simulation_monitor.info["consumed_joules"],
@@ -69,12 +70,13 @@ if __name__ == "__main__":
         env.simulation_monitor.info["time_computing"],
         env.simulation_monitor.info["time_switching_off"],
         env.simulation_monitor.info["time_switching_on"],
-        env.simulation_monitor.info["time_sleeping"]
+        env.simulation_monitor.info["time_sleeping"],
+        env.simulation_monitor.info["energy_waste"]
     )
 
     alpha=0.5
     beta=0.5
-    consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping = compute_objective(env.simulator, result_current, result_prerun, alpha, beta)
+    consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping, energy_waste = compute_objective(env.simulator, result_current, result_prerun, alpha, beta)
     print("OBJECTIVE:", score)
     print("CONSUMED JOULES:", consumed_joules)
     print("MEAN SLOWDOWN:", mean_slowdown)
@@ -83,3 +85,4 @@ if __name__ == "__main__":
     print("TIME SWITCHING OFF:", time_switching_off)
     print("TIME SWITCHING ON:", time_switching_on)
     print("TIME SLEEPING:", time_sleeping)
+    print("ENERGY WASTE:", energy_waste)

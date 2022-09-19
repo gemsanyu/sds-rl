@@ -18,6 +18,7 @@ class ResultInfo(NamedTuple):
     time_switching_off : float
     time_switching_on : float
     time_sleeping : float
+    energy_waste : float
 
 def select(probs, is_training=True):
     '''
@@ -57,28 +58,30 @@ def compute_objective(sim_handler:SimulatorHandler, result:ResultInfo, result_pr
     if result_prerun is not None:
         total_time -= result_prerun.current_time
     consumed_joules = result.consumed_joules
-    total_slowdown = result.total_slowdown
+    mean_slowdown = result.mean_slowdown
     num_jobs_finished = result.num_jobs_finished
     time_idle = result.time_idle
     time_computing = result.time_computing
     time_switching_off = result.time_switching_off
     time_switching_on = result.time_switching_on
     time_sleeping = result.time_sleeping
+    energy_waste = result.energy_waste
     
     if result_prerun is not None:
         consumed_joules -= result_prerun.consumed_joules
-        total_slowdown -= result_prerun.total_slowdown
+        mean_slowdown -= result_prerun.mean_slowdown
         num_jobs_finished -= result_prerun.num_jobs_finished
         time_idle -= result_prerun.time_idle
         time_computing -= result_prerun.time_computing
         time_switching_off -= result_prerun.time_switching_off
         time_switching_on -= result_prerun.time_switching_on
         time_sleeping -= result_prerun.time_sleeping
+        energy_waste -= result_prerun.energy_waste
     max_consumed_joules = total_time*total_max_watt_per_min
-    mean_slowdown = total_slowdown/num_jobs_finished
+    mean_slowdown = mean_slowdown/num_jobs_finished
 
     score = F(mean_slowdown, consumed_joules, max_consumed_joules, alpha, beta, is_normalized)
-    return consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping
+    return consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping, energy_waste
 
 
 def learn(args, agent, agent_opt, critic, critic_opt, memory):
