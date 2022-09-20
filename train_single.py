@@ -56,8 +56,7 @@ if __name__ == "__main__":
                 continue
             probs, entropy = agent(features_, mask_)
             need_decision_idx = T.any(mask_, dim=2).nonzero()[:,1]
-            print(need_decision_idx)
-            exit()
+
             actions, logprobs = select(probs)
             new_features, rewards, done, info = env.step(need_decision_idx, actions)
             critic_vals = critic(features_)
