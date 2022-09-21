@@ -8,6 +8,7 @@ from agent.graph_encoder import GraphAttentionEncoder
 CPU_DEVICE = T.device("cpu")
 
 class Agent(T.jit.ScriptModule):
+# class Agent(nn.Module):
     def __init__(self,
             n_heads: int = 8,
             n_gae_layers: int = 3,
@@ -30,20 +31,20 @@ class Agent(T.jit.ScriptModule):
                                          embed_dim=embed_dim,
                                          node_dim=input_dim,
                                          feed_forward_hidden=gae_ff_hidden)
-        v = T.zeros((1, embed_dim, 2), dtype=T.float32)
-        self.v = nn.Parameter(v)
-        stdv = 1./math.sqrt(embed_dim)
-        self.v.data.uniform_(-stdv, stdv)
+        self.prob_head = nn.Sequential(nn.Linear(embed_dim, 64),
+                                       nn.ReLU(inplace=True),
+                                       nn.Linear(64,32),
+                                       nn.ReLU(inplace=True),
+                                       nn.Linear(32,2))
         self.to(device)
 
     @T.jit.script_method
     def forward(self, features:T.Tensor, mask:T.Tensor)->Tuple[T.Tensor, T.Tensor]:
         batch_size, num_hosts, _ = features.shape
         embeddings, mean_embeddings = self.gae(features)
-        v = self.v.expand(batch_size, self.embed_dim, 2)
-
-        logits = T.bmm(embeddings, v) / math.sqrt(self.embed_dim)
-        logits = logits + mask.log()
+        
+        logits = self.prob_head(embeddings)
+        # logits = logits + mask.log()
             
         probs = T.softmax(logits, dim=2)
         entropy = -T.sum(probs*probs.log())

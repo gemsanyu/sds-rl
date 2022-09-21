@@ -37,6 +37,7 @@ def setup(args):
     last_epoch = 0
     last_step = 0
     if os.path.isfile(checkpoint_path.absolute()):
+        print(checkpoint_path.absolute())
         checkpoint = T.load(checkpoint_path.absolute(), map_location=agent.device)
         agent_state_dict = checkpoint["agent_state_dict"]
         agent_opt_state_dict = checkpoint["agent_opt_state_dict"]

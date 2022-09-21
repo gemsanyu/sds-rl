@@ -19,9 +19,11 @@ from batsim_py.events import JobEvent
 from env.easy_backfilling import EASYScheduler
 from env.utils import *
 
-NO_OP = 0
-SWITCH_OFF = 1
-SWITCH_ON = 2
+# NO_OP = 0
+# SWITCH_OFF = 1
+# SWITCH_ON = 2
+SWITCH_OFF = 0
+SWITCH_ON = 1
 
 class SDS_ENV(Env):
     def __init__(self, 
@@ -68,6 +70,7 @@ class SDS_ENV(Env):
 
     def reset(self):
         self.simulator.close()
+        self.last_host_info = None
         # 1) Instantiate monitors to collect simulation statistics
         self.simulation_monitor = SimulationMonitor(self.simulator)
         self.host_monitor = HostMonitor(self.simulator)
@@ -92,13 +95,14 @@ class SDS_ENV(Env):
     def get_mask(self):
         return get_feasible_mask(list(self.simulator.platform.hosts))
 
-    def step(self, node_idx, actions):
-        self.apply(actions)
+    def step(self, node_idx_list, actions):
+        self.apply(node_idx_list, actions)
         dt = 1800
         # proceed time, and schedule
         # get next features
         current_time = self.simulator.current_time
-        rewards, _, _ = self.get_rewards(current_time, dt) 
+        rewards = 0
+        # rewards, _, _ = self.get_rewards(node_idx_list, current_time, dt) 
         
         if not self.is_really_running:
             done=True
@@ -120,7 +124,7 @@ class SDS_ENV(Env):
         current_time = self.simulator.current_time
         features = self.get_features(current_time)
         mask = get_feasible_mask(list(self.simulator.platform.hosts))
-        rewards, wasted_energy, wasting_time_since_last_dt = self.get_rewards(current_time, dt) 
+        rewards, wasted_energy, wasting_time_since_last_dt = self.get_rewards(node_idx_list, current_time, dt) 
         return features, rewards, done, (mask, wasted_energy, wasting_time_since_last_dt)
 
     @property
@@ -133,25 +137,36 @@ class SDS_ENV(Env):
     def get_mask(self):
         return get_feasible_mask(list(self.simulator.platform.hosts))
 
-    def apply(self, actions):
-        if len(actions.shape) > 1:
-            actions = actions.squeeze(0)
-        hosts_id_to_switch_off = np.nonzero((actions == SWITCH_OFF)).squeeze(1).tolist()
-        hosts_id_to_switch_on = np.nonzero((actions == SWITCH_ON)).squeeze(1).tolist()
+    def apply(self, node_idx_list, actions):
+        feasible_mask = get_feasible_mask(list(self.simulator.platform.hosts))
+        actions = actions.squeeze(0)
+        host_id_to_switch_on = []
+        host_id_to_switch_off = []
+        for i in range(len(node_idx_list)):
+            node_idx = node_idx_list[i]
+            action = actions[i]
+            mask = feasible_mask[node_idx].astype(bool)
+            if mask[action]:
+                if action == SWITCH_OFF:
+                    host_id_to_switch_off += [node_idx.item()]
+                else:
+                    host_id_to_switch_on += [node_idx.item()]
+        if len(host_id_to_switch_off)>0:
+            self.simulator.switch_off(host_id_to_switch_off)
+        if len(host_id_to_switch_on)>0:
+            self.simulator.switch_on(host_id_to_switch_on)
 
-        if len(hosts_id_to_switch_off) > 0:
-            self.simulator.switch_off(hosts_id_to_switch_off)
-        if len(hosts_id_to_switch_on) > 0:
-            self.simulator.switch_on(hosts_id_to_switch_on)
-
-    def get_rewards(self, current_time, dt):
-        wasted_energy = self.host_monitor.info["energy_waste"] 
-        wasted_energy_ = wasted_energy
-        if self.previous_wasted_energy is not None:
-            wasted_energy -= self.previous_wasted_energy
-        wasted_energy /= (190.*self.n_host*dt)
-        self.previous_wasted_energy = wasted_energy_
-        if not self.simulator.is_running:
+    def get_rewards(self, node_idx_list, current_time, dt):
+        wasted_energy = 0
+        host_info = self.host_monitor.host_info
+        last_host_info = self.last_host_info
+        for i in range(len(node_idx_list)):
+            node_idx = node_idx_list[i].item()
+            host_wasted_energy = host_info[node_idx]["energy_waste"]-last_host_info[node_idx]["energy_waste"]
+            host_wasted_energy /= (190.*dt)
+            wasted_energy += host_wasted_energy
+        wasted_energy /= max(len(node_idx_list),1)
+        if not self.is_really_running:
             return -self.alpha*wasted_energy, wasted_energy, 0
 
         waiting_time_since_last_dt = 0.

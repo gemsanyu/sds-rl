@@ -40,4 +40,4 @@ class Critic(T.jit.ScriptModule):
         embeddings, env_embeddings = self.gae(features)
         values = self.value_layers(env_embeddings).squeeze(1)
 
-        return values
+        return -values

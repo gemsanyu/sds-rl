@@ -15,6 +15,7 @@ class SkipConnection(nn.Module):
 
 
 class MultiHeadAttention(torch.jit.ScriptModule):
+# class MultiHeadAttention(nn.Module):
     def __init__(
             self,
             n_heads,
@@ -89,7 +90,6 @@ class MultiHeadAttention(torch.jit.ScriptModule):
         attn = torch.softmax(compatibility, dim=-1)
 
         heads = torch.matmul(attn, V) #-> weighted average of V, 1 vektor
-
         # combine the heads by concatenation, and then project the combined by linear layer
         out = torch.mm(
             heads.permute(1, 2, 0, 3).contiguous().view(-1, self.n_heads * self.val_dim),
@@ -102,7 +102,8 @@ class MultiHeadAttention(torch.jit.ScriptModule):
 class Normalization(nn.Module):
     def __init__(self, embed_dim):
         super(Normalization, self).__init__()
-        self.normalizer = nn.BatchNorm1d(embed_dim, affine=True)
+        # self.normalizer = nn.BatchNorm1d(embed_dim, affine=True)
+        self.normalizer = nn.InstanceNorm1d(embed_dim, affine=True)
         # Normalization by default initializes affine parameters with bias 0 and weight unif(0,1) which is too large!
         self.init_parameters()
 
@@ -113,11 +114,11 @@ class Normalization(nn.Module):
 
     def forward(self, input: torch.Tensor)->torch.Tensor:
         batch_size, num_items, feature_size = input.shape
-        input = input.view(batch_size*num_items, feature_size)
-        normed = self.normalizer(input)
-        normed_ = normed.view(batch_size, num_items, -1)
-
-        return normed_
+        # input = input.view(batch_size*num_items, feature_size)
+        # normed = self.normalizer(input)
+        # normed_ = normed.view(batch_size, num_items, -1)
+        # return normed_
+        return self.normalizer(input.permute(0, 2, 1)).permute(0, 2, 1)
         
 
 class MultiHeadAttentionLayer(nn.Sequential):
@@ -148,6 +149,7 @@ class MultiHeadAttentionLayer(nn.Sequential):
 
 
 class GraphAttentionEncoder(torch.jit.ScriptModule):
+# class GraphAttentionEncoder(nn.Module):
     def __init__(
             self,
             n_heads,

@@ -1,10 +1,11 @@
+from copy import deepcopy
 import torch as T
 import numpy as np
 import pathlib
 
 from env.sds_env import SDS_ENV
 from config import get_args
-from utils import select, learn
+from utils import select, learn, ResultInfo, compute_objective
 from setup import setup
 
 NUM_DATASETS = 1000
@@ -24,7 +25,7 @@ def save_checkpoint(agent_state_dict,
                     "epoch":epoch,
                     "step":step
                 }
-    T.save(checkpoint, checkpoint_path)
+    T.save(checkpoint, checkpoint_path.absolute())
 
 if __name__ == "__main__":
     args = get_args()
@@ -44,22 +45,38 @@ if __name__ == "__main__":
         done = False
         saved_logprobs = []
         saved_rewards = []
+        saved_states = []
+        next_state = None
         agent.train()
+        env.last_host_info = deepcopy(env.host_monitor.host_info)
         while not done:
             features_ = T.from_numpy(features).to(agent.device).float()
             mask_ = T.from_numpy(mask).to(agent.device).float()
+            # print(mask_)
             if not T.any(mask_):
                 env.simulator.proceed_time(time=1800)
-                done = env.is_really_running
+                env.host_monitor.update_info_all()
+                env.last_host_info = deepcopy(env.host_monitor.host_info)
+                done = not env.is_really_running
                 features = env.get_features(env.simulator.current_time)
+                features = np.concatenate(features)
+                features = features.reshape(args.num_envs, -1, 11)
                 mask = env.get_mask()
+                mask = np.asanyarray(mask)
+                mask = mask.reshape(args.num_envs, -1, 2)
                 continue
+            # print(mask_)
             probs, entropy = agent(features_, mask_)
             need_decision_idx = T.any(mask_, dim=2).nonzero()[:,1]
-
+            probs = probs[:, need_decision_idx, :]
             actions, logprobs = select(probs)
             new_features, rewards, done, info = env.step(need_decision_idx, actions)
-            critic_vals = critic(features_)
+            
+            # save the experiences
+            saved_logprobs += [logprobs.sum()]
+            saved_rewards += [rewards]
+            saved_states += [features_]
+            
             if not done:
                 features = new_features
                 features = np.concatenate(features)
@@ -67,7 +84,10 @@ if __name__ == "__main__":
                 new_mask, wasted_energy, waiting_time_since_last_dt = info
                 mask = new_mask
                 mask = np.asanyarray(mask)
-                mask = mask.reshape(args.num_envs, -1, 3)
+                mask = mask.reshape(args.num_envs, -1, 2)
+            next_state = features
+
+            env.last_host_info = deepcopy(env.host_monitor.host_info)
 
             #log important values
             writer.add_scalar("Reward", rewards, step)
@@ -83,6 +103,38 @@ if __name__ == "__main__":
             writer.add_scalar("Number of Switching State", env.host_monitor.info["nb_switches"], step)
                 
             if step > 0 and len(saved_logprobs) >= args.training_steps:
-                
+                saved_experiences = (saved_logprobs, saved_states, saved_rewards, next_state)
+                learn(args, agent, agent_opt, critic, critic_opt, done, saved_experiences)
+                #clean experiences
+                saved_logprobs = []
+                saved_rewards = []
+                saved_states = []
+                next_state = None
                 save_checkpoint(agent.state_dict(), agent_opt.state_dict(), critic.state_dict(), critic_opt.state_dict(), epoch, step, checkpoint_path)
             step+=1
+            print(step)
+
+        # if done, log the objective
+        # compute objective
+        result = ResultInfo(
+            env.simulation_monitor.info["total_slowdown"],
+            env.simulation_monitor.info["nb_jobs_finished"],
+            env.simulator.current_time,
+            env.simulation_monitor.info["consumed_joules"],
+            env.simulation_monitor.info["time_idle"],
+            env.simulation_monitor.info["time_computing"],
+            env.simulation_monitor.info["time_switching_off"],
+            env.simulation_monitor.info["time_switching_on"],
+            env.simulation_monitor.info["time_sleeping"]
+        )
+        consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping = compute_objective(env.simulator, result, None, args.alpha, args.beta)
+        writer.add_scalar("Consumed Joules Epoch", consumed_joules, epoch)
+        writer.add_scalar("Mean Slowdown Epoch", mean_slowdown, epoch)
+        writer.add_scalar("Score Epoch", score, epoch)
+        writer.add_scalar("Time Idle Epoch", time_idle, epoch)
+        writer.add_scalar("Time Computing Epoch", time_computing, epoch)
+        writer.add_scalar("Time Switching Off Epoch", time_switching_off, epoch)
+        writer.add_scalar("Time Switching On Epoch", time_switching_on, epoch)
+        writer.add_scalar("Time Sleeping Epoch", time_switching_off, epoch)
+        
+        

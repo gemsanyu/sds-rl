@@ -33,7 +33,7 @@ def get_arrival_rate(submission_times, is_normalized=True):
         return submission_times[0]
     submission_times = np.asarray(submission_times)
     submission_times -= submission_times[0].item()
-    max_time = submission_times[-1]
+    max_time = max(submission_times[-1],1e-8)
     submission_times_r = np.roll(submission_times, 1)  
     submission_times -= submission_times_r
     arrival_rate = np.mean(submission_times[1:])

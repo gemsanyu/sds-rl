@@ -18,15 +18,15 @@ def define_args_parser():
                         help='num head in multi-head attention')
     parser.add_argument('--n-gae-layers',
                         type=int,
-                        default=16,
+                        default=3,
                         help='num multi-head attention layers')
     parser.add_argument('--gae-ff-hidden',
                         type=int,
-                        default=512,
+                        default=128,
                         help='num neurons in linear embedder in MHA layers')
     parser.add_argument('--embed-dim',
                         type=int,
-                        default=64,
+                        default=128,
                         help='size of embeding dims/ num neurons used in every substructure of model')
     parser.add_argument('--tanh-clip',
                         type=float,
@@ -46,7 +46,7 @@ def define_args_parser():
     # Misc
     parser.add_argument('--max-epoch',
                         type=int,
-                        default=1,
+                        default=10,
                         help='Maximum training epoch.')
     parser.add_argument('--max-training-steps',
                         type=int,
@@ -58,7 +58,7 @@ def define_args_parser():
                         help='mini batch size for training the agent.')
     parser.add_argument('--lr',
                         type=float,
-                        default=3e-4,
+                        default=1e-4,
                         help='Learning rate for optimizer')
     parser.add_argument('--dataset-size',
                         type=int,
@@ -74,7 +74,7 @@ def define_args_parser():
                         help='num of simultaneuos environments running for validation step.')
     parser.add_argument('--training-steps',
                         type=int,
-                        default=256,
+                        default=64,
                         help='num of steps before one step training')
     parser.add_argument('--n-learning-epochs',
                         type=int,
