@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     run_partly_with_baseline(env)
     result_prerun = ResultInfo(
-        env.simulation_monitor.info["mean_slowdown"],
+        env.simulation_monitor.info["total_slowdown"],
         env.simulation_monitor.info["nb_jobs_finished"],
         env.simulator.current_time,
         env.simulation_monitor.info["consumed_joules"],
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         env.simulator.proceed_time()
 
     result_current = ResultInfo(
-        env.simulation_monitor.info["mean_slowdown"],
+        env.simulation_monitor.info["total_slowdown"],
         env.simulation_monitor.info["nb_jobs_finished"],
         env.simulator.current_time,
         env.simulation_monitor.info["consumed_joules"],
