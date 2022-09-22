@@ -104,9 +104,9 @@ class SDS_ENV(Env):
         rewards = 0
         # rewards, _, _ = self.get_rewards(node_idx_list, current_time, dt) 
         
-        if not self.is_really_running:
+        if not self.simulator.is_running:
             done=True
-            self.simulator.proceed_time()
+            # self.simulator.proceed_time()
             self.host_monitor.update_info_all()
             self.simulator.close()
             return None, rewards, done, None

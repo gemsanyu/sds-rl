@@ -74,7 +74,7 @@ def define_args_parser():
                         help='num of simultaneuos environments running for validation step.')
     parser.add_argument('--training-steps',
                         type=int,
-                        default=64,
+                        default=256,
                         help='num of steps before one step training')
     parser.add_argument('--n-learning-epochs',
                         type=int,
@@ -125,6 +125,10 @@ def define_args_parser():
                         type=bool,
                         default=False,
                         help='if baseline dont use any policy')
+    parser.add_argument('--epoch-test',
+                        type=int,
+                        default=-1,
+                        help='epoch of checkpoint to test')
 
 
     return parser

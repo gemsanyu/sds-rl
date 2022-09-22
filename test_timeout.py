@@ -85,4 +85,4 @@ if __name__ == "__main__":
     print("TIME SWITCHING OFF:", time_switching_off)
     print("TIME SWITCHING ON:", time_switching_on)
     print("TIME SLEEPING:", time_sleeping)
-    print("ENERGY WASTE:", energy_waste)
+    print("ENERGY WASTE:", env.simulation_monitor.info["energy_waste"])

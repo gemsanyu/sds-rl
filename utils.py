@@ -34,7 +34,7 @@ def select(probs, is_training=True):
         op = dist.sample()
         logprob = dist.log_prob(op)
     else:
-        prob, op = T.max(probs, dim=1)
+        prob, op = T.max(probs, dim=2)
         logprob = T.log(prob)
     logprob = logprob.sum(dim=1)
     return op, logprob
@@ -95,7 +95,7 @@ def learn(args, agent, agent_opt, critic, critic_opt, done, saved_experiences):
     returns = [0 for _ in range(len(saved_logprobs))]
     critic_vals = [0. for _ in range(len(saved_logprobs))]
     for i in range(len(returns)):
-        R = args.gamma*saved_rewards[-i] + R
+        R = saved_rewards[-i] + args.gamma*R
         returns[-i]=R
         critic_vals[-i] = critic(saved_states[-i]).squeeze(0)
     saved_logprobs = T.stack(saved_logprobs)
@@ -103,7 +103,7 @@ def learn(args, agent, agent_opt, critic, critic_opt, done, saved_experiences):
     returns = T.tensor(returns, dtype=T.float32)
     advantage = (returns - critic_vals).detach()
     #update actor
-    agent_loss = (saved_logprobs*advantage).sum()
+    agent_loss = -(saved_logprobs*advantage).sum()
     agent_opt.zero_grad(set_to_none=True)
     agent_loss.backward()
     T.nn.utils.clip_grad_norm_(agent.parameters(), max_norm=args.grad_norm)

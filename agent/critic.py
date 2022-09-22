@@ -38,6 +38,6 @@ class Critic(T.jit.ScriptModule):
     @T.jit.script_method
     def forward(self, features:T.Tensor)->T.Tensor:
         embeddings, env_embeddings = self.gae(features)
-        values = self.value_layers(env_embeddings).squeeze(1)
-
+        # values = self.value_layers(env_embeddings).squeeze(1)
+        values = self.value_layers(embeddings).sum()
         return -values

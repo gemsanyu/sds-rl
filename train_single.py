@@ -26,6 +26,8 @@ def save_checkpoint(agent_state_dict,
                     "step":step
                 }
     T.save(checkpoint, checkpoint_path.absolute())
+    epoch_checkpoint_path = str(checkpoint_path.absolute())+"_"+str(epoch)
+    T.save(checkpoint, epoch_checkpoint_path)
 
 if __name__ == "__main__":
     args = get_args()
@@ -57,7 +59,7 @@ if __name__ == "__main__":
                 env.simulator.proceed_time(time=1800)
                 env.host_monitor.update_info_all()
                 env.last_host_info = deepcopy(env.host_monitor.host_info)
-                done = not env.is_really_running
+                done = not env.simulator.is_running
                 features = env.get_features(env.simulator.current_time)
                 features = np.concatenate(features)
                 features = features.reshape(args.num_envs, -1, 11)
@@ -90,6 +92,7 @@ if __name__ == "__main__":
             env.last_host_info = deepcopy(env.host_monitor.host_info)
 
             #log important values
+            writer.add_scalar("Entropy", entropy.sum().item(), step)
             writer.add_scalar("Reward", rewards, step)
             writer.add_scalar("Wasted Energy Reward", wasted_energy, step)
             writer.add_scalar("Waitim Time Reward", waiting_time_since_last_dt, step)
