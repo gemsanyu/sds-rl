@@ -14,6 +14,7 @@ class StateAwareBFScheduler(StateAwareFCFSScheduler):
         return "EASY"
 
     def schedule_caller(self, arg):
+        self.host_monitor.update_info_all()
         super().schedule()
 
     def schedule(self) -> None:

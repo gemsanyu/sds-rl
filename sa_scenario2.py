@@ -41,8 +41,8 @@ def run(args):
 
     # coba sebelum dischedule kita matikan node 2 dan 3 (mulai dari 0)
     env.simulator.switch_off([2,3])
-    env.host_monitor.update_info_all()
     for step in range(11):
+        env.host_monitor.update_info_all()
         if not env.simulator.is_running:
             break
         print("----------------------------------")
@@ -53,6 +53,7 @@ def run(args):
             print(host.state, host.is_allocated)
             print("current switching:", env.host_monitor.host_info[host.id]["current_time_switching_on"], env.host_monitor.host_info[host.id]["current_time_switching_off"])    
         env.simulator.proceed_time()
+
 if __name__ == "__main__":
     args = get_args()
     run(args)

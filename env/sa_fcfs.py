@@ -6,37 +6,6 @@ from batsim_py.simulator import SimulatorHandler
 
 from env.utils import get_host_time_to_ready
 
-
-def make_sure_host_on(simulator:SimulatorHandler, host_monitor:HostMonitor, host:Host, current_time:float):
-    host_monitor.update_info_all()
-    print("HELLO", host.id, host.state)
-    skip_states = [HostState.IDLE, HostState.COMPUTING, HostState.SWITCHING_ON]
-    if host.state in skip_states:
-        return
-    if host.state == HostState.SLEEPING:
-        simulator.switch_on(hosts_id=[host.id])
-    elif host.state == HostState.SWITCHING_OFF:
-        make_sure_host_on_func = lambda current_time: make_sure_host_on(simulator, host_monitor, host, current_time)
-        at += simulator.current_time + 5
-        simulator.set_callback(at, make_sure_host_on_func)
-        # rare cases, where the calculated time to switch off is not accurate
-
-
-# def make_sure_on(simulator:SimulatorHandler, host_monitor:HostMonitor, reserved_hosts:List[Host], current_time:float):
-#     host_monitor.update_info_all()
-#     hosts_to_switch_on = []
-#     skip_states = [HostState.IDLE, HostState.COMPUTING, HostState.SWITCHING_ON]
-#     for host in reserved_hosts:
-#         if host.state in skip_states:
-#             continue
-#         if host.state == HostState.SLEEPING:
-#             hosts_to_switch_on += [host.id]
-#         elif host.state == HostState.SWITCHING_OFF:
-#             info = host_monitor.host_info[host.id]
-#             time_left_to_switch_off = info["time_left_to_switch_off"]
-
-
-
 class StateAwareFCFSScheduler:
     def __init__(self, simulator: SimulatorHandler,
                  host_monitor: HostMonitor) -> None:
@@ -82,7 +51,7 @@ class StateAwareFCFSScheduler:
                 for host in reserved_hosts:
                     if host.state in skip_states:
                         continue
-                    make_sure_host_on_func = lambda current_time, host_=host: make_sure_host_on(self.simulator, self.host_monitor, host_, current_time)
+                    make_sure_host_on_func = lambda current_time, host_=host: self.simulator.make_sure_host_on(host_, current_time)
                     time_left_to_switch_off = host_info[host.id]["time_left_to_switch_off"]
                     at = max(p_start_t-TIME_TO_SWITCH_ON+time_left_to_switch_off, 1)
                     at += self.simulator.current_time

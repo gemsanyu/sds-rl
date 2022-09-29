@@ -47,7 +47,7 @@ def run(args):
     env.simulator.switch_off([2])
     env.simulator.proceed_time(900)
     env.simulator.switch_off([3])
-    for step in range(11):
+    for step in range(15):
         env.host_monitor.update_info_all()
         if not env.simulator.is_running:
             break

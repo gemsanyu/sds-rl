@@ -2,6 +2,7 @@ import torch as T
 import numpy as np
 import pathlib
 from batsim_py import simulator
+from batsim_py.events import JobEvent
 
 from env.sds_env import SDS_ENV
 from timeout_policy import TimeoutPolicy
@@ -35,10 +36,13 @@ def save_checkpoint(agent_state_dict,
 def run(args):
     env = SDS_ENV(dataset_name="scenario1.json", batsim_verbosity="quiet", is_test=True)
     env.reset()
+    env.simulator.subscribe(JobEvent.SUBMITTED, env.scheduler.schedule_caller)
+    env.simulator.subscribe(JobEvent.COMPLETED, env.scheduler.schedule_caller)
+
     # coba sebelum dischedule kita matikan node 2 dan 3 (mulai dari 0)
     env.simulator.switch_off([2,3])
-    env.host_monitor.update_info_all()
     for step in range(11):
+        env.host_monitor.update_info_all()
         print("----------------------------------")
         print("TIME:", env.simulator.current_time)
         print("QUEUE", env.simulator.queue)
