@@ -34,6 +34,33 @@ nodes:
 note: make sure nodes 0 and 1 is switched on only at 6300-1800(Sonn)=4500
 edit simulator here, cant do anything in the scheduler
 need to at approximated start time to allocate method
+DONE!
+
+
+Scenario 3a:
+0-----------------3001------5701----->6701
+--------J1(R3;S3001;W1000)--start------>
+
+nodes:
+0: switch off at 0 -> 2700 
+1: switch off at 0 -> 2700 
+2: switch off at 0 -> 2700 
+3: switch off at 0 -> 2700
+
+0: switch on at 2701 -> 4501 
+1: switch on at 3301 -> 5101 
+2: switch on at 3901 -> 5701
+3: switch on at 4501 -> 6301
+
+3000 job masuk,
+lalu allocate.
+start_time = 5701
+
+5701-switching_on = 5701-1800 = 3901
+
+note: make sure nodes 0 and 1 is switched on only at 6300-1800(Sonn)=4500
+edit simulator here, cant do anything in the scheduler
+need to at approximated start time to allocate method
 
 
 BFS

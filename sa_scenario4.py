@@ -1,23 +1,25 @@
+import torch as T
+import numpy as np
+import pathlib
 from batsim_py.events import JobEvent
 
 from env.sds_env import SDS_ENV
 from config import get_args
 
+
+
 def run(args):
-    env = SDS_ENV(dataset_name="scenario3.json", batsim_verbosity="quiet", is_test=True)
+    env = SDS_ENV(dataset_name="scenario4.json", batsim_verbosity="quiet", is_test=True)
     env.reset()
     env.simulator.subscribe(JobEvent.SUBMITTED, env.scheduler.schedule_caller)
     env.simulator.subscribe(JobEvent.COMPLETED, env.scheduler.schedule_caller)
 
-    # coba sebelum dischedule kita matikan node 2 dan 3 (mulai dari 0)
-    env.simulator.switch_off([0])
-    env.simulator.proceed_time(900)
-    env.simulator.switch_off([1])
-    env.simulator.proceed_time(900)
+    env.simulator.proceed_time(1300)
     env.simulator.switch_off([2])
-    env.simulator.proceed_time(900)
+    env.simulator.proceed_time(700)
     env.simulator.switch_off([3])
-    for step in range(15):
+
+    for step in range(30):
         env.host_monitor.update_info_all()
         if not env.simulator.is_running:
             break
