@@ -46,9 +46,10 @@ if __name__ == "__main__":
         env.simulation_monitor.info["time_computing"],
         env.simulation_monitor.info["time_switching_off"],
         env.simulation_monitor.info["time_switching_on"],
-        env.simulation_monitor.info["time_sleeping"]
+        env.simulation_monitor.info["time_sleeping"],
+        env.host_monitor.info["energy_waste"]
     )
-    last_waste_energy = env.simulation_monitor.info["waste_energy"]
+    # last_waste_energy = env.simulation_monitor.info["waste_energy"]
 
     # start testing
     # 1 epoch = 1 full training data,, not the epoch commonly understood (?)
@@ -69,6 +70,7 @@ if __name__ == "__main__":
             mask_ = T.from_numpy(mask).to(agent.device).float()
             # print(mask_)
             if not T.any(mask_):
+                env.scheduler.schedule()
                 env.simulator.proceed_time(time=1800)
                 env.host_monitor.update_info_all()
                 env.last_host_info = deepcopy(env.host_monitor.host_info)
@@ -84,7 +86,9 @@ if __name__ == "__main__":
             probs, entropy = agent(features_, mask_)
             need_decision_idx = T.any(mask_, dim=2).nonzero()[:,1]
             probs = probs[:, need_decision_idx, :]
-            actions, logprobs = select(probs, is_training=False)
+            new_probs = T.zeros_like(probs)
+            new_probs[:,:,1] = 1
+            actions, logprobs = select(new_probs, is_training=False)
             new_features, rewards, done, info = env.step(need_decision_idx, actions)
             
             if not done:
@@ -108,13 +112,14 @@ if __name__ == "__main__":
         env.simulation_monitor.info["time_computing"],
         env.simulation_monitor.info["time_switching_off"],
         env.simulation_monitor.info["time_switching_on"],
-        env.simulation_monitor.info["time_sleeping"]
+        env.simulation_monitor.info["time_sleeping"],
+        env.host_monitor.info["energy_waste"]
     )
-    current_waste_energy = env.simulation_monitor.info["waste_energy"]
+    # current_waste_energy = env.simulation_monitor.info["waste_energy"]
 
     alpha=0.5
     beta=0.5
-    consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping = compute_objective(env.simulator, result_current, result_prerun, alpha, beta)
+    consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping, energy_waste = compute_objective(env.simulator, result_current, result_prerun, alpha, beta)
     print("OBJECTIVE:", score)
     print("CONSUMED JOULES:", consumed_joules)
     print("MEAN SLOWDOWN:", mean_slowdown)
@@ -123,4 +128,4 @@ if __name__ == "__main__":
     print("TIME SWITCHING OFF:", time_switching_off)
     print("TIME SWITCHING ON:", time_switching_on)
     print("TIME SLEEPING:", time_sleeping)
-    print("WASTE ENERGY:", current_waste_energy-last_waste_energy)
+    print("WASTE ENERGY:", energy_waste)

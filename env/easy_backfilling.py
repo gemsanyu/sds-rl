@@ -5,6 +5,7 @@ class EASYScheduler(FCFSScheduler):
     return "EASY"
 
   def schedule(self) -> None:
+    print("Halo", len(self.simulator.queue))
     super().schedule() # Schedule with FCFS
 
     # Apply the backfilling mechanism
