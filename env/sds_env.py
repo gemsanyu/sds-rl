@@ -14,7 +14,7 @@ import numpy as np
 from batsim_py import SimulatorHandler
 from batsim_py import SimulatorHandler
 from batsim_py.monitors import HostStateSwitchMonitor, SimulationMonitor, HostMonitor, ConsumedEnergyMonitor, JobMonitor
-from batsim_py.events import JobEvent
+from batsim_py.events import HostEvent, JobEvent
 
 from env.easy_backfilling import EASYScheduler
 from env.utils import *
@@ -81,6 +81,15 @@ class SDS_ENV(Env):
         # job infos dict, manually compile 
         self.job_infos = {}
         self.simulator.subscribe(JobEvent.SUBMITTED, self.add_to_job_infos)
+
+        # trigger for scheduler
+        self.simulator.subscribe(JobEvent.COMPLETED, self.scheduler.schedule)
+        self.simulator.subscribe(JobEvent.SUBMITTED, self.scheduler.schedule)
+        self.simulator.subscribe(HostEvent.ON, self.scheduler.schedule)
+        
+        # self.simulator.subscribe(HostEvent.STATE_CHANGED, self.scheduler.schedule)
+        # self.simulator.subscribe(HostEvent.COMPUTATION_POWER_STATE_CHANGED, self.scheduler.schedule)
+                
         self.previous_wasted_energy = None
 
         self.simulator.start(platform=self.platform_path, workload=self.dataset_filepath.absolute(), verbosity=self.batsim_verbosity)
@@ -111,7 +120,7 @@ class SDS_ENV(Env):
             self.simulator.close()
             return None, rewards, done, None
 
-        self.scheduler.schedule()
+        # self.scheduler.schedule()
         self.simulator.proceed_time(time=dt)  # proceed directly to the next event.
         done = False
         self.host_monitor.update_info_all()
@@ -129,6 +138,7 @@ class SDS_ENV(Env):
 
     @property
     def is_really_running(self):
+        # return self.simulator.is_running
         is_really_running_ = not self.simulator.is_submitter_finished
         is_really_running_ = is_really_running_ or len(self.simulator.jobs) > 0
         is_really_running_ = is_really_running_ or self.host_state_switch_monitor.info["nb_computing"][-1] > 0

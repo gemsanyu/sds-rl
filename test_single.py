@@ -46,9 +46,10 @@ if __name__ == "__main__":
         env.simulation_monitor.info["time_computing"],
         env.simulation_monitor.info["time_switching_off"],
         env.simulation_monitor.info["time_switching_on"],
-        env.simulation_monitor.info["time_sleeping"]
+        env.simulation_monitor.info["time_sleeping"],
+        env.simulation_monitor.info["energy_waste"]
     )
-    last_waste_energy = env.simulation_monitor.info["waste_energy"]
+    last_waste_energy = env.simulation_monitor.info["energy_waste"]
 
     # start testing
     # 1 epoch = 1 full training data,, not the epoch commonly understood (?)
@@ -84,9 +85,11 @@ if __name__ == "__main__":
             probs, entropy = agent(features_, mask_)
             need_decision_idx = T.any(mask_, dim=2).nonzero()[:,1]
             probs = probs[:, need_decision_idx, :]
+            print(probs)
+            # probs_new = T.zeros_like(probs)
+            # probs_new[:,:,1] = 1
             actions, logprobs = select(probs, is_training=False)
             new_features, rewards, done, info = env.step(need_decision_idx, actions)
-            
             if not done:
                 features = new_features
                 features = np.concatenate(features)
@@ -108,13 +111,14 @@ if __name__ == "__main__":
         env.simulation_monitor.info["time_computing"],
         env.simulation_monitor.info["time_switching_off"],
         env.simulation_monitor.info["time_switching_on"],
-        env.simulation_monitor.info["time_sleeping"]
+        env.simulation_monitor.info["time_sleeping"],
+        env.simulation_monitor.info["energy_waste"]
     )
-    current_waste_energy = env.simulation_monitor.info["waste_energy"]
+    current_waste_energy = env.simulation_monitor.info["energy_waste"]
 
     alpha=0.5
     beta=0.5
-    consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping = compute_objective(env.simulator, result_current, result_prerun, alpha, beta)
+    consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping, energy_waste = compute_objective(env.simulator, result_current, result_prerun, alpha, beta)
     print("OBJECTIVE:", score)
     print("CONSUMED JOULES:", consumed_joules)
     print("MEAN SLOWDOWN:", mean_slowdown)

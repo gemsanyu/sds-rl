@@ -4,7 +4,7 @@ class EASYScheduler(FCFSScheduler):
   def __str__(self) -> str:
     return "EASY"
 
-  def schedule(self) -> None:
+  def schedule(self, arg=None) -> None:
     super().schedule() # Schedule with FCFS
 
     # Apply the backfilling mechanism

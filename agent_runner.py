@@ -1,6 +1,4 @@
 from copy import deepcopy
-import os
-import random
 import torch as T
 import numpy as np
 import pathlib
@@ -31,17 +29,91 @@ def save_checkpoint(agent_state_dict,
     epoch_checkpoint_path = str(checkpoint_path.absolute())+"_"+str(epoch)
     T.save(checkpoint, epoch_checkpoint_path)
 
+
+class AgentRunner():
+    def __init__(self,
+                 agent, 
+                 critic,
+                 agent_opt,
+                 writer,
+                 dt=1800) -> None:
+        self.agent = agent
+        self.critic = critic
+        self.agent_opt = agent_opt
+        self.writer = writer
+        self.mask = np.ones((args.num_envs, 128, 2))
+        self.mask[:,:,1] = 0
+        self.features = env.reset() 
+        self.features = features.reshape(args.num_envs, -1, 11)
+        self.done = False
+        self.saved_logprobs = []
+        self.saved_rewards = []
+        self.saved_states = []
+        self.next_state = None
+
+    def new_epoch(self):
+        self.mask = np.ones((args.num_envs, 128, 2))
+        self.mask[:,:,1] = 0
+        self.features = env.reset() 
+        self.features = features.reshape(args.num_envs, -1, 11)
+        self.done = False
+        self.saved_logprobs = []
+        self.saved_rewards = []
+        self.saved_states = []
+        self.next_state = None
+
+    def act(self, step, epoch, env:SDS_ENV, current_time):
+        if not env.is_really_running:
+            return
+        # set callback for next step
+        next_step_at = current_time + self.dt
+        next_act_func = lambda ct, step_=step, epoch_=epoch, env_=env: self.act(step_,epoch_,env_,ct) 
+        env.simulator.set_callback(next_step_at, next_act_func)
+
+        #do stuffss
+        features_ = T.from_numpy(self.features).to(self.agent.device).float()
+        mask_ = T.from_numpy(self.mask).to(self.agent.device).float()
+        if not T.any(mask_):
+            env.host_monitor.update_info_all()
+            env.last_host_info = deepcopy(env.host_monitor.host_info)
+            self.done = not env.simulator.is_running
+            features = env.get_features(env.simulator.current_time)
+            features = np.concatenate(features)
+            self.features = features.reshape(args.num_envs, -1, 11)
+            mask = env.get_mask()
+            mask = np.asanyarray(mask)
+            self.mask = mask.reshape(args.num_envs, -1, 2)
+            return
+
+        # print(mask_)
+        probs, entropy = agent(features_, mask_)
+        need_decision_idx = T.any(mask_, dim=2).nonzero()[:,1]
+        probs = probs[:, need_decision_idx, :]
+        actions, logprobs = select(probs)
+        new_features, rewards, done, info = env.step(need_decision_idx, actions)
+        
+        # save the experiences
+        self.saved_logprobs += [logprobs.sum()]
+        self.saved_rewards += [rewards]
+        self.saved_states += [features_]
+        
+        if not done:
+            features = new_features
+            features = np.concatenate(features)
+            features = features.reshape(args.num_envs, -1, 11)
+            new_mask, wasted_energy, waiting_time_since_last_dt = info
+            mask = new_mask
+            mask = np.asanyarray(mask)
+            mask = mask.reshape(args.num_envs, -1, 2)
+        next_state = features
+
+        env.last_host_info = deepcopy(env.host_monitor.host_info)
+
+
 if __name__ == "__main__":
-#    torch.set_num_threads(args.num_threads)
-    seed = 1
-    T.set_num_threads(os.cpu_count())
-    T.manual_seed(seed)
-    random.seed(seed)
-    np.random.seed(seed)
-
-
     args = get_args()
     agent, critic, agent_opt, critic_opt, memory, last_epoch, last_step, checkpoint_path, writer = setup(args)
+    
     # start training
     # 1 epoch = 1 full training data,, not the epoch commonly understood (?)
     # init training environment
@@ -50,57 +122,16 @@ if __name__ == "__main__":
     for epoch in range(last_epoch, args.max_epoch):
         # mulai generate experience dari training environments
         env = SDS_ENV(dataset_name=args.dataset_name, batsim_verbosity="quiet", is_test=False, alpha=args.alpha, beta=args.beta)
-        mask = np.ones((args.num_envs, 128, 2))
-        mask[:,:,1] = 0
-        features = env.reset() 
-        features = features.reshape(args.num_envs, -1, 11)
-        done = False
-        saved_logprobs = []
-        saved_rewards = []
-        saved_states = []
-        next_state = None
-        agent.train()
         env.last_host_info = deepcopy(env.host_monitor.host_info)
         
+        while env.simulator.is_running:
+            env.simulator.set_callback(at=env.simulator.current_time+args.dt, step_agent)
+            env.simulator.proceed_time()
+            env.scheduler.schedule()
+        
         while not done:
-            features_ = T.from_numpy(features).to(agent.device).float()
-            mask_ = T.from_numpy(mask).to(agent.device).float()
-            # print(mask_)
-            if not T.any(mask_):
-                env.simulator.proceed_time(time=1800)
-                env.host_monitor.update_info_all()
-                env.last_host_info = deepcopy(env.host_monitor.host_info)
-                done = not env.simulator.is_running
-                features = env.get_features(env.simulator.current_time)
-                features = np.concatenate(features)
-                features = features.reshape(args.num_envs, -1, 11)
-                mask = env.get_mask()
-                mask = np.asanyarray(mask)
-                mask = mask.reshape(args.num_envs, -1, 2)
-                continue
-            # print(mask_)
-            probs, entropy = agent(features_, mask_)
-            need_decision_idx = T.any(mask_, dim=2).nonzero()[:,1]
-            probs = probs[:, need_decision_idx, :]
-            actions, logprobs = select(probs)
-            new_features, rewards, done, info = env.step(need_decision_idx, actions)
             
-            # save the experiences
-            saved_logprobs += [logprobs.sum()]
-            saved_rewards += [rewards]
-            saved_states += [features_]
             
-            if not done:
-                features = new_features
-                features = np.concatenate(features)
-                features = features.reshape(args.num_envs, -1, 11)
-                new_mask, wasted_energy, waiting_time_since_last_dt = info
-                mask = new_mask
-                mask = np.asanyarray(mask)
-                mask = mask.reshape(args.num_envs, -1, 2)
-            next_state = features
-
-            env.last_host_info = deepcopy(env.host_monitor.host_info)
 
             #log important values
             writer.add_scalar("Entropy", entropy.sum().item(), step)

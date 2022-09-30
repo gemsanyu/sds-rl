@@ -1,3 +1,4 @@
+from copy import deepcopy
 import torch as T
 import numpy as np
 import pathlib
@@ -55,6 +56,8 @@ if __name__ == "__main__":
         env.simulation_monitor.info["time_sleeping"],
         env.simulation_monitor.info["energy_waste"]
     )
+    last_waste_energy = env.simulation_monitor.info["energy_waste"]
+
 
     timeout_policy = TimeoutPolicy(args.timeout, env.simulator)
     while env.simulator.is_running:
@@ -73,6 +76,7 @@ if __name__ == "__main__":
         env.simulation_monitor.info["time_sleeping"],
         env.simulation_monitor.info["energy_waste"]
     )
+    current_waste_energy = env.simulation_monitor.info["energy_waste"]
 
     alpha=0.5
     beta=0.5
@@ -85,4 +89,4 @@ if __name__ == "__main__":
     print("TIME SWITCHING OFF:", time_switching_off)
     print("TIME SWITCHING ON:", time_switching_on)
     print("TIME SLEEPING:", time_sleeping)
-    print("ENERGY WASTE:", env.simulation_monitor.info["energy_waste"])
+    print("WASTE ENERGY:", current_waste_energy-last_waste_energy)

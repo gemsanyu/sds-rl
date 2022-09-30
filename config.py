@@ -74,7 +74,7 @@ def define_args_parser():
                         help='num of simultaneuos environments running for validation step.')
     parser.add_argument('--training-steps',
                         type=int,
-                        default=256,
+                        default=64,
                         help='num of steps before one step training')
     parser.add_argument('--n-learning-epochs',
                         type=int,
