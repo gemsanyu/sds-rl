@@ -46,6 +46,7 @@ if __name__ == "__main__":
     run_partly_with_baseline(env)
     result_prerun = ResultInfo(
         env.simulation_monitor.info["total_slowdown"],
+        env.simulation_monitor.info["total_waiting_time"],
         env.simulation_monitor.info["nb_jobs_finished"],
         env.simulator.current_time,
         env.simulation_monitor.info["consumed_joules"],
@@ -66,6 +67,7 @@ if __name__ == "__main__":
 
     result_current = ResultInfo(
         env.simulation_monitor.info["total_slowdown"],
+        env.simulation_monitor.info["total_waiting_time"],
         env.simulation_monitor.info["nb_jobs_finished"],
         env.simulator.current_time,
         env.simulation_monitor.info["consumed_joules"],
@@ -80,7 +82,7 @@ if __name__ == "__main__":
 
     alpha=0.5
     beta=0.5
-    consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping, energy_waste = compute_objective(env.simulator, result_current, result_prerun, alpha, beta)
+    consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping, energy_waste, mean_waiting_time = compute_objective(env.simulator, result_current, result_prerun, alpha, beta)
     print("OBJECTIVE:", score)
     print("CONSUMED JOULES:", consumed_joules)
     print("MEAN SLOWDOWN:", mean_slowdown)
@@ -90,3 +92,5 @@ if __name__ == "__main__":
     print("TIME SWITCHING ON:", time_switching_on)
     print("TIME SLEEPING:", time_sleeping)
     print("WASTE ENERGY:", current_waste_energy-last_waste_energy)
+    print("AVERAGE JOBS WAITING TIME:", mean_waiting_time)
+    print("ELAPSED TIME:", env.simulation_monitor.info["simulation_time"])

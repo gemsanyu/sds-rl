@@ -10,6 +10,7 @@ from batsim_py.simulator import SimulatorHandler
 
 class ResultInfo(NamedTuple):
     total_slowdown: float
+    total_waiting_time: float
     num_jobs_finished: int
     current_time: float
     consumed_joules: float
@@ -59,6 +60,7 @@ def compute_objective(sim_handler:SimulatorHandler, result:ResultInfo, result_pr
         total_time -= result_prerun.current_time
     consumed_joules = result.consumed_joules
     total_slowdown = result.total_slowdown
+    total_waiting_time = result.total_waiting_time
     num_jobs_finished = result.num_jobs_finished
     time_idle = result.time_idle
     time_computing = result.time_computing
@@ -79,9 +81,10 @@ def compute_objective(sim_handler:SimulatorHandler, result:ResultInfo, result_pr
         energy_waste -= result_prerun.energy_waste
     max_consumed_joules = total_time*total_max_watt_per_min
     mean_slowdown = total_slowdown/num_jobs_finished
+    mean_waiting_time = total_waiting_time/num_jobs_finished
 
     score = F(mean_slowdown, consumed_joules, max_consumed_joules, alpha, beta, is_normalized)
-    return consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping, energy_waste
+    return consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping, energy_waste, mean_waiting_time
 
 
 def learn(args, agent, agent_opt, critic, critic_opt, done, saved_experiences):
@@ -98,6 +101,7 @@ def learn(args, agent, agent_opt, critic, critic_opt, done, saved_experiences):
         R = saved_rewards[-i] + args.gamma*R
         returns[-i]=R
         critic_vals[-i] = critic(saved_states[-i]).squeeze(0)
+        # print(R, critic_vals[-i])
     saved_logprobs = T.stack(saved_logprobs)
     critic_vals = T.stack(critic_vals)
     returns = T.tensor(returns, dtype=T.float32)

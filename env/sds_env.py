@@ -194,6 +194,7 @@ class SDS_ENV(Env):
             waiting_time_since_last_dt += (waittime/dt)
         waiting_time_since_last_dt /= max(n_job_waitting,1)
         reward = -self.alpha*wasted_energy -self.beta*waiting_time_since_last_dt
+        # print(reward, wasted_energy, waiting_time_since_last_dt)
         return reward, wasted_energy, waiting_time_since_last_dt
 
     def get_features(self, current_time)-> Tuple[np.array, np.array]:

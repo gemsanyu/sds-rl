@@ -82,8 +82,10 @@ if __name__ == "__main__":
             probs, entropy = agent(features_, mask_)
             need_decision_idx = T.any(mask_, dim=2).nonzero()[:,1]
             probs = probs[:, need_decision_idx, :]
+            # print(probs)
             actions, logprobs = select(probs)
             new_features, rewards, done, info = env.step(need_decision_idx, actions)
+            # print(np.linalg.norm(features-new_features))
             
             # save the experiences
             saved_logprobs += [logprobs.sum()]
