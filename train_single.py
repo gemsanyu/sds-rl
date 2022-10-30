@@ -153,5 +153,5 @@ if __name__ == "__main__":
         writer.add_scalar("Time Switching Off Epoch", time_switching_off, epoch)
         writer.add_scalar("Time Switching On Epoch", time_switching_on, epoch)
         writer.add_scalar("Time Sleeping Epoch", time_switching_off, epoch)
-        
+        writer.add_scalar("Total Simulation Time", env.simulation_monitor.info["simulation_time"])
         
