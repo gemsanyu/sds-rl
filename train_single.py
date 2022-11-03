@@ -127,6 +127,20 @@ if __name__ == "__main__":
                 saved_states = []
                 next_state = None
                 save_checkpoint(agent.state_dict(), agent_opt.state_dict(), critic.state_dict(), critic_opt.state_dict(), epoch, step, checkpoint_path)
+            qepoch = 50000
+            if step%qepoch == 0:
+                checkpoint = {
+                    "agent_state_dict": agent.state_dict(),
+                    "agent_opt_state_dict": agent_opt.state_dict(),
+                    "critic_state_dict": critic.state_dict(),   
+                    "critic_opt_state_dict":critic_opt.state_dict(),
+                    "epoch":epoch,
+                    "step":step
+                }
+                epoch_checkpoint_path = str(checkpoint_path.absolute())+"_quasi"+str(int(step/qepoch))
+                T.save(checkpoint, epoch_checkpoint_path)
+                # save_checkpoint(agent.state_dict(), agent_opt.state_dict(), critic.state_dict(), critic_opt.state_dict(), epoch, step, epoch_checkpoint_path)
+                
             step+=1
             print(step)
 
