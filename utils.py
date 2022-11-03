@@ -1,11 +1,11 @@
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, List
 import json
 
 import numpy as np
 import torch as T
 
 from env.sds_env import SDS_ENV
-from batsim_py.monitors import SimulationMonitor
+from batsim_py.monitors import JobMonitor
 from batsim_py.simulator import SimulatorHandler
 
 class ResultInfo(NamedTuple):
@@ -134,3 +134,40 @@ def run_partly_with_baseline(env: SDS_ENV, completed_percentage_target=0.8):
         completed_percentage = (num_completed_jobs/num_jobs)
         if completed_percentage > completed_percentage_target:
             return
+
+#get success jobs history
+class SuccessJobInfo(NamedTuple):
+    job_id: str
+    submission_time: int
+    num_nodes: int
+    requested_time: int
+    starting_time: int
+    execution_time: int
+    finish_time: int
+    waiting_time: int
+    turnaround_time: int
+    stretch: int
+
+
+
+def get_success_jobs_info(job_monitor:JobMonitor) -> List[SuccessJobInfo]:
+    success_job_info_list = []
+    job_info = job_monitor.complete_info
+    len_job_info = len(job_info["job_id"])
+    for i in range(len_job_info):
+        s_job_info = SuccessJobInfo(
+            job_id=job_info["job_id"][i],
+            submission_time=job_info["submission_time"][i],
+            num_nodes=job_info["requested_number_of_resources"][i],
+            requested_time=job_info["requested_time"][i],
+            starting_time=job_info["starting_time"][i],
+            execution_time=job_info["execution_time"][i],
+            finish_time=job_info["finish_time"][i],
+            waiting_time=job_info["waiting_time"][i],
+            turnaround_time=job_info["turnaround_time"][i],
+            stretch=job_info["stretch"][i]
+        )
+        success_job_info_list += [s_job_info]
+    return success_job_info_list
+
+

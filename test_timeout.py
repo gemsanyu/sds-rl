@@ -7,7 +7,7 @@ from batsim_py import simulator
 from env.sds_env import SDS_ENV
 from timeout_policy import TimeoutPolicy
 from config import get_args
-from utils import select, compute_objective, run_partly_with_baseline, ResultInfo
+from utils import select, get_success_jobs_info, compute_objective, run_partly_with_baseline, ResultInfo
 from setup import setup
 
 from batsim_py.monitors import HostStateSwitchMonitor, SimulationMonitor, HostMonitor, ConsumedEnergyMonitor, JobMonitor
@@ -94,3 +94,13 @@ if __name__ == "__main__":
     print("WASTE ENERGY:", current_waste_energy-last_waste_energy)
     print("AVERAGE JOBS WAITING TIME:", mean_waiting_time)
     print("ELAPSED TIME:", env.simulation_monitor.info["simulation_time"])
+    print("Execution time:", env.simulator.current_time)
+
+    s_job_info_list = get_success_jobs_info(env.job_monitor)
+    filename = "Timeout_job_info"+str(args.timeout)+".csv"
+    with open(filename, 'a+') as f:
+        header="job_id,submission_time,num_nodes,requested_time,starting_time,execution_time,finish_time,waiting_time,turnaround_time,stretch\n"
+        f.write(header)
+        for s_job_info in s_job_info_list:
+            row = str(s_job_info.job_id) + "," + str(s_job_info.submission_time) + "," + str(s_job_info.num_nodes) + "," + str(s_job_info.requested_time) + "," + str(s_job_info.starting_time) + "," + str(s_job_info.execution_time) + "," + str(s_job_info.finish_time) + "," + str(s_job_info.waiting_time) + "," + str(s_job_info.turnaround_time) + "," + str(s_job_info.stretch) + "\n"
+            f.write(row)

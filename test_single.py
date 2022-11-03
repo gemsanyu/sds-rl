@@ -5,7 +5,7 @@ import pathlib
 
 from env.sds_env import SDS_ENV
 from config import get_args
-from utils import select, compute_objective, run_partly_with_baseline, ResultInfo
+from utils import select, get_success_jobs_info, compute_objective, run_partly_with_baseline, ResultInfo
 from setup import setup_test
 
 NUM_DATASETS = 1000
@@ -117,7 +117,7 @@ if __name__ == "__main__":
         env.simulation_monitor.info["energy_waste"]
     )
     current_waste_energy = env.simulation_monitor.info["energy_waste"]
-
+    env.simulator.close()
     alpha=0.5
     beta=0.5
     consumed_joules, mean_slowdown, score, time_idle, time_computing, time_switching_off, time_switching_on, time_sleeping, energy_waste, mean_waiting_time = compute_objective(env.simulator, result_current, result_prerun, alpha, beta)
@@ -132,3 +132,13 @@ if __name__ == "__main__":
     print("WASTE ENERGY:", current_waste_energy-last_waste_energy)
     print("AVERAGE JOBS WAITING TIME:", mean_waiting_time)
     print("ELAPSED TIME:", env.simulation_monitor.info["simulation_time"])
+    print("Execution time:", env.simulator.current_time)
+
+    s_job_info_list = get_success_jobs_info(env.job_monitor)
+    filename = "Test_job_info_"+args.title+".csv"
+    with open(filename, 'a+') as f:
+        header="job_id,submission_time,num_nodes,requested_time,starting_time,execution_time,finish_time,waiting_time,turnaround_time,stretch\n"
+        f.write(header)
+        for s_job_info in s_job_info_list:
+            row = str(s_job_info.job_id) + "," + str(s_job_info.submission_time) + "," + str(s_job_info.num_nodes) + "," + str(s_job_info.requested_time) + "," + str(s_job_info.starting_time) + "," + str(s_job_info.execution_time) + "," + str(s_job_info.finish_time) + "," + str(s_job_info.waiting_time) + "," + str(s_job_info.turnaround_time) + "," + str(s_job_info.stretch) + "\n"
+            f.write(row)
